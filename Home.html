@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EventHive</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: white;
+      color: #333;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .menu-icon {
+      font-size: 24px;
+    }
+
+    .section-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 20px 0 10px;
+    }
+
+    .month-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: #777;
+      margin-bottom: 10px;
+    }
+
+    .event-card {
+      background-color: #e5c354;
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .event-date {
+      background-color: #a3842f;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      border-radius: 6px;
+      margin-right: 15px;
+      width: 45px;
+    }
+
+    .event-date div:first-child {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .event-info {
+      color: white;
+    }
+
+    .event-info .time {
+      font-size: 13px;
+    }
+
+    .event-info .name {
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    .nav-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .nav-button {
+      background-color: #f7f4db;
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      font-weight: bold;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .nav-button:hover {
+      background-color: #f0e6b0;
+    }
+
+    .nav-button.plan {
+      background-color: #e5c354;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="menu-icon">☰</div>
+      <div style="font-size: 24px; font-weight: bold;">EventHive</div>
+    </div>
+    <div class="bell">🔔</div>
+  </div>
+
+  <div class="section-title">Upcoming</div>
+
+  <div class="month-title">April</div>
+  <div class="event-card">
+    <div class="event-date">
+      <div>18</div>
+      <div>Tue</div>
+    </div>
+    <div class="event-info">
+      <div class="time">7:00 PM - 12:00 AM</div>
+      <div class="name">Naomi’s Pool Party</div>
+    </div>
+  </div>
+
+  <div class="month-title">June</div>
+  <div class="event-card">
+    <div class="event-date">
+      <div>13</div>
+      <div>Wed</div>
+    </div>
+    <div class="event-info">
+      <div class="time">8:00 PM - 12:00 AM</div>
+      <div class="name">Alana’s Cat Party</div>
+    </div>
+  </div>
+
+  <div class="nav-grid">
+    <div class="nav-button plan">Plan</div>
+    <div class="nav-button">Invites</div>
+    <div class="nav-button">Events</div>
+    <div class="nav-button">Money</div>
+  </div>
+</body>
+</html>

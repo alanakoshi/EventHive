@@ -1,1 +1,1 @@
-# EventPlanner
+# EventHive

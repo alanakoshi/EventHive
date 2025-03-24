@@ -9,144 +9,114 @@
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 20px;
-      background-color: white;
-      color: #333;
+      background-color: #fff;
     }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .menu-icon {
+    h1 {
       font-size: 24px;
-    }
-
-    .section-title {
-      font-size: 22px;
       font-weight: bold;
-      margin: 20px 0 10px;
-    }
-
-    .month-title {
-      font-size: 18px;
-      font-weight: bold;
-      color: #777;
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
 
     .event-card {
-      background-color: #e5c354;
-      border-radius: 10px;
-      padding: 10px;
+      background-color: #f6d337;
+      border-radius: 12px;
+      padding: 12px;
       display: flex;
       align-items: center;
       margin-bottom: 20px;
     }
 
-    .event-date {
+    .date-box {
       background-color: #a3842f;
       color: white;
       text-align: center;
-      padding: 10px;
-      border-radius: 6px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
       margin-right: 15px;
-      width: 45px;
+      min-width: 50px;
     }
 
-    .event-date div:first-child {
-      font-weight: bold;
-      font-size: 18px;
+    .date-box div:last-child {
+      font-weight: normal;
+      font-size: 13px;
     }
 
     .event-info {
       color: white;
     }
 
-    .event-info .time {
-      font-size: 13px;
-    }
-
-    .event-info .name {
+    .event-info .title {
       font-weight: bold;
       font-size: 16px;
+      margin-bottom: 4px;
     }
 
-    .nav-grid {
+    .event-info .time {
+      font-size: 14px;
+    }
+
+    .grid-buttons {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+      gap: 16px;
       margin-top: 30px;
     }
 
-    .nav-button {
+    .button-tile {
       background-color: #f7f4db;
-      border-radius: 20px;
-      padding: 20px;
+      border-radius: 16px;
       text-align: center;
+      padding: 20px;
       font-weight: bold;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
       cursor: pointer;
+      box-shadow: 1px 2px 5px rgba(0,0,0,0.1);
       transition: background 0.2s;
     }
 
-    .nav-button:hover {
+    .button-tile:hover {
       background-color: #f0e6b0;
     }
 
-    .nav-button.plan {
-      background-color: #e5c354;
+    .button-plan {
+      background-color: #f6d337;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="header-left">
-      <div class="menu-icon">☰</div>
-      <div style="font-size: 24px; font-weight: bold;">EventHive</div>
-    </div>
-    <div class="bell">🔔</div>
-  </div>
 
-  <div class="section-title">Upcoming</div>
+  <h1>EventHive</h1>
 
-  <div class="month-title">April</div>
   <div class="event-card">
-    <div class="event-date">
+    <div class="date-box">
       <div>18</div>
       <div>Tue</div>
     </div>
     <div class="event-info">
+      <div class="title">Naomi’s Pool Party</div>
       <div class="time">7:00 PM - 12:00 AM</div>
-      <div class="name">Naomi’s Pool Party</div>
     </div>
   </div>
 
-  <div class="month-title">June</div>
   <div class="event-card">
-    <div class="event-date">
+    <div class="date-box">
       <div>13</div>
       <div>Wed</div>
     </div>
     <div class="event-info">
+      <div class="title">Alana’s Cat Party</div>
       <div class="time">8:00 PM - 12:00 AM</div>
-      <div class="name">Alana’s Cat Party</div>
     </div>
   </div>
 
-  <div class="nav-grid">
-    <div class="nav-button plan">Plan</div>
-    <div class="nav-button">Invites</div>
-    <div class="nav-button">Events</div>
-    <div class="nav-button">Money</div>
+  <div class="grid-buttons">
+    <div class="button-tile button-plan">Plan</div>
+    <div class="button-tile">Invites</div>
+    <div class="button-tile">Events</div>
+    <div class="button-tile">Money</div>
   </div>
+
 </body>
 </html>

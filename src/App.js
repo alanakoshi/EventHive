@@ -8,7 +8,7 @@ import "./App.css";
 
 function App() {
   return (
-    <Router>
+    <Router basename="/EventHive">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/plan" element={<Plan />} />

@@ -4,6 +4,7 @@ import Plan from "./Plan";
 import Invites from "./Invites";
 import Events from "./Events";
 import Money from "./Money";
+import InviteCohost from "./InviteCohost";
 import "./App.css";
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
         <Route path="/invites" element={<Invites />} />
         <Route path="/events" element={<Events />} />
         <Route path="/money" element={<Money />} />
+        <Route path="/invite-cohost" element={<InviteCohost />} />
       </Routes>
     </Router>
   );

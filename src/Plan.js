@@ -6,6 +6,7 @@ import './App.css';
 function Plan() {
   const [eventName, setEventName] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleInputChange = (e) => {
     setEventName(e.target.value);
@@ -14,7 +15,13 @@ function Plan() {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && eventName.trim() !== "") {
       setIsSubmitted(true);
+      setIsEditing(false);
     }
+  };
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setIsSubmitted(false);
   };
 
   return (
@@ -29,7 +36,10 @@ function Plan() {
       <div className='color-block'>
         <div className='event-block'>
           {isSubmitted ? (
-            <div className="event-name-box">{eventName}</div>
+            <div className="event-name-box">
+              {eventName}
+              <button onClick={handleEditClick} className="edit-button">Edit</button>
+            </div>
           ) : (
             <input 
               type="text" 
@@ -45,7 +55,7 @@ function Plan() {
       <div className="next-button">
         <Link to="/invite-cohost" className="button-tile">Next</Link>
       </div>
-   </div>
+    </div>
   );
 }
 

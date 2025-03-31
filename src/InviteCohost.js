@@ -28,7 +28,7 @@ function InviteCohost() {
       <div className='progress-bar'>Progress Bar</div>
       <div className='percentage'>20%</div>
       <div className='back-button'>
-        <Link to="/plan" className="button-tile">&lt;</Link>
+        <Link to="/invite-cohost" className="button-tile">&lt;</Link>
       </div>
       <h2>Invite Cohost</h2>
       <h3>Add Cohost</h3>
@@ -58,7 +58,7 @@ function InviteCohost() {
         </div>
       </div>
       <div className="next-button">
-        <Link to="/next-step" className="button-tile">Next</Link>
+        <Link to="/date" className="button-tile">Next</Link>
       </div>
     </div>
   );

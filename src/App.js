@@ -5,6 +5,7 @@ import Invites from "./Invites";
 import Events from "./Events";
 import Money from "./Money";
 import InviteCohost from "./InviteCohost";
+import Date from "./Date";
 import "./App.css";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
         <Route path="/events" element={<Events />} />
         <Route path="/money" element={<Money />} />
         <Route path="/invite-cohost" element={<InviteCohost />} />
+        <Route path="/date" element={<Date />} />
       </Routes>
     </Router>
   );

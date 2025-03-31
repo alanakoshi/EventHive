@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/EventHive/static/css/main.38688bf1.css",
-    "main.js": "/EventHive/static/js/main.6481f35d.js",
+    "main.css": "/EventHive/static/css/main.83f2bcc8.css",
+    "main.js": "/EventHive/static/js/main.d1ca79a4.js",
     "static/js/453.ed3810f9.chunk.js": "/EventHive/static/js/453.ed3810f9.chunk.js",
     "index.html": "/EventHive/index.html",
-    "main.38688bf1.css.map": "/EventHive/static/css/main.38688bf1.css.map",
-    "main.6481f35d.js.map": "/EventHive/static/js/main.6481f35d.js.map",
+    "main.83f2bcc8.css.map": "/EventHive/static/css/main.83f2bcc8.css.map",
+    "main.d1ca79a4.js.map": "/EventHive/static/js/main.d1ca79a4.js.map",
     "453.ed3810f9.chunk.js.map": "/EventHive/static/js/453.ed3810f9.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.38688bf1.css",
-    "static/js/main.6481f35d.js"
+    "static/css/main.83f2bcc8.css",
+    "static/js/main.d1ca79a4.js"
   ]
 }

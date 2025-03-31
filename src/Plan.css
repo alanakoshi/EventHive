@@ -1,3 +1,7 @@
 .next-button {
     margin-top: 200px; /* Adjust the value as needed */
-  }
+}
+
+.back-button {
+    margin-top: 20px;
+}

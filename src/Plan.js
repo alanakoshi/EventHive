@@ -1,8 +1,22 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './Plan.css'
-import './App.css'
+import './Plan.css';
+import './App.css';
 
 function Plan() {
+  const [eventName, setEventName] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleInputChange = (e) => {
+    setEventName(e.target.value);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && eventName.trim() !== "") {
+      setIsSubmitted(true);
+    }
+  };
+
   return (
     <div>
       <div className='progress-bar'>Progress Bar</div>
@@ -14,7 +28,18 @@ function Plan() {
       <h3>Event Name</h3>
       <div className='color-block'>
         <div className='event-block'>
-          <div className=''>Me & Hamster & John's Party</div>
+          {isSubmitted ? (
+            <div className="event-name-box">{eventName}</div>
+          ) : (
+            <input 
+              type="text" 
+              placeholder="Enter event name" 
+              value={eventName} 
+              onChange={handleInputChange} 
+              onKeyDown={handleKeyPress}
+              className="event-input"
+            />
+          )}
         </div>
       </div>
       <div className="next-button">

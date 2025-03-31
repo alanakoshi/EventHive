@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import './InviteCohost.css';
+import './Budget.css';
 import './App.css';
 
-function InviteCohost() {
+function Venue() {
   const [cohostName, setCohostName] = useState("");
   const [cohosts, setCohosts] = useState([]);
 
@@ -25,23 +25,22 @@ function InviteCohost() {
 
   return (
     <div>
-      <div className='progress-bar'>Progress Bar</div>
-      <div className='percentage'>20%</div>
-      <div className='back-button'>
-        <Link to="/plan" className="button-tile">&lt;</Link>
-      </div>
-      <h2>Invite Cohost</h2>
-      <h3>Add Cohost</h3>
-      <div className='color-block'>
-        <div className='event-block'>
-          <input 
-            type="text" 
-            placeholder="Enter cohost name" 
-            value={cohostName} 
-            onChange={handleInputChange} 
-            onKeyDown={handleKeyPress}
-            className="event-input"
-          />
+        <div className='progress-bar'>Progress Bar</div>
+        <div className='percentage'>60%</div>
+        <div className='back-button'>
+            <Link to="/venue" className="button-tile">&lt;</Link>
+        </div>
+        <h2>Budget</h2>
+        <div className='color-block'>
+          <div className='event-block'>
+            <input 
+              type="text" 
+              placeholder="Enter a budget" 
+              value={cohostName} 
+              onChange={handleInputChange} 
+              onKeyDown={handleKeyPress}
+              className="event-input"
+            />
         </div>
         <div className='cohost-list'>
           {cohosts.map((name, index) => (
@@ -58,10 +57,10 @@ function InviteCohost() {
         </div>
       </div>
       <div className="next-button">
-        <Link to="/date" className="button-tile">Next</Link>
+        <Link to="/voting" className="button-tile">Next</Link>
       </div>
     </div>
   );
 }
 
-export default InviteCohost;
+export default Venue;

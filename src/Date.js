@@ -1,18 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import Calendar from './components/Calendar'; // Import Calendar component
-import './Date.css'; // Your custom styles for the Date component
-import './App.css'; // Global styles
+import Calendar from './components/Calendar';
+import { EventContext } from './EventContext';
+import './Date.css';
+import './App.css';
 
 function Date() {
-  const [selectedDates, setSelectedDates] = useState([]);
+  const { eventOptions, setEventOptions } = useContext(EventContext);
 
-  // Function to toggle the selection of a date
   const toggleDate = (date) => {
+    const selectedDates = eventOptions.dates || [];
     if (selectedDates.includes(date)) {
-      setSelectedDates(selectedDates.filter(d => d !== date)); // Deselect
+      // Deselect date
+      setEventOptions((prevOptions) => ({
+        ...prevOptions,
+        dates: selectedDates.filter(d => d !== date),
+      }));
     } else {
-      setSelectedDates([...selectedDates, date]); // Select
+      // Select date
+      setEventOptions((prevOptions) => ({
+        ...prevOptions,
+        dates: [...selectedDates, date],
+      }));
     }
   };
 
@@ -25,13 +34,11 @@ function Date() {
       </div>
       <h2>Date</h2>
 
-      {/* Pass selectedDates and toggleDate to Calendar */}
-      <Calendar selectedDates={selectedDates} toggleDate={toggleDate} />
+      <Calendar selectedDates={eventOptions.dates || []} toggleDate={toggleDate} />
 
       <div className="selected-dates">
         <h3>Selected Dates:</h3>
-        {/* Display selected dates */}
-        <div>{selectedDates.join(', ')}</div>
+        <div>{(eventOptions.dates || []).join(', ')}</div>
       </div>
 
       <div className="next-button">

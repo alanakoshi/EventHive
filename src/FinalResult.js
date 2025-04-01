@@ -26,7 +26,7 @@ function FinalResult() {
     return (
         <div>
             <div className='progress-bar'>Progress Bar</div>
-            <div className='percentage'>100%</div>
+            <div className='percentage'>70%</div>
             <div className='back-button'>
                 <Link to="/voting" className="button-tile">&lt;</Link>
             </div>

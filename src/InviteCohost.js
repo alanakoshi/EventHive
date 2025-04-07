@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import { CohostContext } from './CohostContext';
 import './InviteCohost.css';
 import './App.css';
 
 function InviteCohost() {
+  const { cohosts, setCohosts } = useContext(CohostContext);
   const [cohostName, setCohostName] = useState("");
-  const [cohosts, setCohosts] = useState([]);
 
   const handleInputChange = (e) => {
     setCohostName(e.target.value);

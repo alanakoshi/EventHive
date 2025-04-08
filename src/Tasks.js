@@ -1,5 +1,6 @@
-import { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { CohostContext } from './CohostContext';
 import './App.css';
 import './Voting.css';
@@ -7,6 +8,29 @@ import './Voting.css';
 function Tasks() {
   const { cohosts } = useContext(CohostContext);
   const [tasks, setTasks] = useState({}); // { cohostName: [ { text, completed } ] }
+  
+  // State for the current user's name
+  const [myName, setMyName] = useState('');
+
+  // Listen for authentication state changes to get the current user's name
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setMyName(user.displayName || user.email || '');
+      } else {
+        setMyName('');
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Merge the current user's name with the cohosts.
+  // If no cohosts exist, default to just your name.
+  // If cohosts exist and your name is not included, add it.
+  const allCohosts = myName
+    ? (cohosts.length === 0 ? [myName] : (cohosts.includes(myName) ? cohosts : [myName, ...cohosts]))
+    : cohosts;
 
   const handleAddTask = (cohost, taskText) => {
     if (!taskText.trim()) return;
@@ -46,16 +70,13 @@ function Tasks() {
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
         {/* Back button aligned left */}
         <Link to="/final-result" className="btn back-btn rounded-circle shadow-sm back-icon">
-          <i
-            className="bi bi-arrow-left-short"
-          ></i>
+          <i className="bi bi-arrow-left-short"></i>
         </Link>
-
         {/* Centered title */}
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Tasks</h1>
       </div>
 
-      {cohosts.map((cohost, idx) => (
+      {allCohosts.map((cohost, idx) => (
         <div key={idx} className="color-block">
           <h3>{cohost}'s Tasks</h3>
           <TaskInput onAdd={task => handleAddTask(cohost, task)} />

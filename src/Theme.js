@@ -65,8 +65,11 @@ function Theme() {
           ))}
         </div>
       </div>
-      <div className="next-button">
-        <Link to="/venue" className="button-tile">Next</Link>
+      {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/venue" className="next-button">
+          Next
+        </Link>
       </div>
     </div>
   );

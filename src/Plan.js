@@ -59,8 +59,11 @@ function Plan() {
           )}
         </div>
       </div>
-      <div className="next-button">
-        <Link to="/invite-cohost" className="button-tile">Next</Link>
+      {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/invite-cohost" className="next-button">
+          Next
+        </Link>
       </div>
     </div>
   );

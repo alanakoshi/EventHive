@@ -65,8 +65,11 @@ function Budget() {
           ))}
         </div>
       </div>
-      <div className="next-button">
-        <Link to="/voting" className="button-tile">Next</Link>
+      {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/voting" className="next-button">
+          Next
+        </Link>
       </div>
     </div>
   );

@@ -14,9 +14,12 @@ function Voting() {
                 <Link to="/split-budget" className="button-tile">&lt;</Link>
             </div>
             <h2>Complete</h2>
-            <div className="next-button">
-                <Link to="/home" className="button-tile">Home</Link>
-            </div>
+            {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/home" className="next-button">
+          Next
+        </Link>
+      </div>
         </div>
     );
 }

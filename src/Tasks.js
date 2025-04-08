@@ -71,8 +71,11 @@ function Tasks() {
         </div>
       ))}
 
-      <div className="next-button">
-        <Link to="/split-budget" className="button-tile">Next</Link>
+      {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/split-budget" className="next-button">
+          Next
+        </Link>
       </div>
     </div>
   );

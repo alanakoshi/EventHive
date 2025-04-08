@@ -65,8 +65,11 @@ function Venue() {
           ))}
         </div>
       </div>
-      <div className="next-button">
-        <Link to="/budget" className="button-tile">Next</Link>
+      {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/budget" className="next-button">
+          Next
+        </Link>
       </div>
     </div>
   );

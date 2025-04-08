@@ -62,8 +62,11 @@ function InviteCohost() {
           ))}
         </div>
       </div>
-      <div className="next-button">
-        <Link to="/date" className="button-tile">Next</Link>
+      {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/date" className="next-button">
+          Next
+        </Link>
       </div>
     </div>
   );

@@ -4,13 +4,35 @@
   width: 100%;
 }
 
-.next-button {
-  width: 100%; /* Full width */
-  display: flex;
-  justify-content: center;
-}
 .back-button a {
   text-decoration: none;
   color: inherit;
   
 }
+
+  /* Next button row at bottom */
+  .next-button-row {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  /* Next button styling */
+  .next-button {
+    width: 100%; /* Full width */
+    display: flex;
+    justify-content: center;
+    text-decoration: none;
+    background-color: #ffc107;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }

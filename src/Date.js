@@ -161,9 +161,11 @@ function Date() {
         </div>
       </div>
       
-      {/* Next Button */}
-      <div className="next-button">
-        <Link to="/theme" className="button-tile">Next</Link>
+      {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/theme" className="next-button">
+          Next
+        </Link>
       </div>
     </div>
   );

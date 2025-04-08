@@ -43,9 +43,12 @@ function FinalResult() {
                 </div>
             ))}
 
-            <div className="next-button">
-                <Link to="/tasks" className="button-tile">Next</Link>
-            </div>
+            {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/tasks" className="next-button">
+          Next
+        </Link>
+      </div>
         </div>
     );
 }

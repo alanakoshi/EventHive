@@ -89,9 +89,12 @@ function Voting() {
                 </div>
             ))}
             <button onClick={handleSubmit}>Submit Votes</button>
-            <div className='next-button'>
-                <Link to='/final-result' className='button-tile'>Next</Link>
-            </div>
+            {/* Next button */}
+      <div className="next-button-row">
+        <Link to="/final-result" className="next-button">
+          Next
+        </Link>
+      </div>
         </div>
     );
 }

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Plan.css';
 import './App.css';
+import './components/ProgressBar';
 
 function Plan() {
   const [eventName, setEventName] = useState("");
@@ -25,9 +26,13 @@ function Plan() {
   };
 
   return (
-    <div>
-      <div className='progress-bar'>Progress Bar</div>
-      <div className='percentage'>10%</div>
+    <div className="container">
+      {/* Progress bar section */}
+      <div className="progress-container">
+        <div className="progress-bar" style={{ width: '10%' }} />
+        <div className="progress-percentage">10%</div>
+      </div>
+
       <div className='back-button'>
         <Link to="/" className="button-tile">&lt;</Link>
       </div>

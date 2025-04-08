@@ -30,9 +30,12 @@ function Venue() {
   };
 
   return (
-    <div>
-      <div className='progress-bar'>Progress Bar</div>
-      <div className='percentage'>50%</div>
+    <div className="container">
+      {/* Progress bar section */}
+      <div className="progress-container">
+        <div className="progress-bar" style={{ width: '50%' }} />
+        <div className="progress-percentage">50%</div>
+      </div>
       <div className='back-button'>
         <Link to="/theme" className="button-tile">&lt;</Link>
       </div>

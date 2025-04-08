@@ -30,9 +30,12 @@ function Budget() {
   };
 
   return (
-    <div>
-      <div className='progress-bar'>Progress Bar</div>
-      <div className='percentage'>60%</div>
+    <div className="container">
+      {/* Progress bar section */}
+      <div className="progress-container">
+        <div className="progress-bar" style={{ width: '60%' }} />
+        <div className="progress-percentage">60%</div>
+      </div>
       <div className='back-button'>
         <Link to="/venue" className="button-tile">&lt;</Link>
       </div>

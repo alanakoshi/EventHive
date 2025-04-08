@@ -7,6 +7,12 @@
     background-color: #fff;
     position: relative;
   }
+
+  @media (max-width: 400px) {
+    .container {
+
+    }
+  }
   
   /* Progress Bar Styles */
   .progress-bar {

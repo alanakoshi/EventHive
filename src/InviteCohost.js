@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CohostContext } from './CohostContext';
 import './InviteCohost.css';
 import './App.css';
+import './components/ProgressBar';
 
 function InviteCohost() {
   const { cohosts, setCohosts } = useContext(CohostContext);
@@ -25,9 +26,12 @@ function InviteCohost() {
   };
 
   return (
-    <div>
-      <div className='progress-bar'>Progress Bar</div>
-      <div className='percentage'>20%</div>
+    <div className="container">
+      {/* Progress bar section */}
+      <div className="progress-container">
+        <div className="progress-bar" style={{ width: '20%' }} />
+        <div className="progress-percentage">20%</div>
+      </div>
       <div className='back-button'>
         <Link to="/plan" className="button-tile">&lt;</Link>
       </div>

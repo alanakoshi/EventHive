@@ -13,7 +13,7 @@ function SplitBudget() {
     : "0.00";
 
   return (
-    <div className="split-budget-container">
+    <div className="container">
       {/* Progress bar section */}
       <div className="progress-container">
         <div className="progress-bar" style={{ width: '90%' }} />

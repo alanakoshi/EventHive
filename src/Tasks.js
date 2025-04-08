@@ -37,9 +37,12 @@ function Tasks() {
   };
 
   return (
-    <div>
-      <div className='progress-bar'>Progress Bar</div>
-      <div className='percentage'>80%</div>
+    <div className="container">
+      {/* Progress bar section */}
+      <div className="progress-container">
+        <div className="progress-bar" style={{ width: '80%' }} />
+        <div className="progress-percentage">80%</div>
+      </div>
       <div className='back-button'>
         <Link to="/final-result" className="button-tile">&lt;</Link>
       </div>

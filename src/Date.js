@@ -93,10 +93,12 @@ function Date() {
   });
 
   return (
-    <div className="date-page">
-      {/* Progress Bar */}
-      <div className="progress-bar">Progress Bar</div>
-      <div className="percentage">30%</div>
+    <div className="container">
+      {/* Progress bar section */}
+      <div className="progress-container">
+        <div className="progress-bar" style={{ width: '30%' }} />
+        <div className="progress-percentage">30%</div>
+      </div>
       
       {/* Back Button */}
       <div className="back-button">

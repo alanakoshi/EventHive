@@ -6,8 +6,10 @@ import MenuSidebar from './components/MenuSideBar';
 function Home() {
   return (
     <div>
-      <MenuSidebar />
-      <h1>EventHive</h1>
+      <div className="d-flex justify-content-center align-items-center">
+        <MenuSidebar />
+        <h1>EventHive</h1>
+      </div>
 
       <div className="event-card">
         <div className="date-box">

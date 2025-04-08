@@ -1,34 +1,32 @@
-import { Link } from 'react-router-dom';
-import './Voting.css';
-import './App.css';
+import React from 'react';
+import './Complete.css';
+import { useNavigate } from 'react-router-dom';
 
-function Voting() {
-    return (
-        <div className="container">
-            {/* Progress bar section */}
-            <div className="progress-container">
-                <div className="progress-bar" style={{ width: '100%' }} />
-                <div className="progress-percentage">100%</div>
-            </div>
-            <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
-            {/* Back button aligned left */}
-            <Link to="/split-budget" className="btn back-btn rounded-circle shadow-sm back-icon">
-              <i
-                className="bi bi-arrow-left-short"
-              ></i>
-            </Link>
+function Complete() {
+  const navigate = useNavigate();
 
-            {/* Centered title */}
-            <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Complete</h1>
+  return (
+    <div className="complete-container">
+      <div className="complete-card">
+        <div className="top-row">
+          <button className="back-button" onClick={() => navigate(-1)}>&larr;</button>
+          <h2>Complete</h2>
+          <div className="progress-bar">
+            <div className="bar" />
+            <span>100%</span>
           </div>
-            {/* Next button */}
-      <div className="next-button-row">
-        <Link to="/home" className="next-button">
-          Home
-        </Link>
-      </div>
         </div>
-    );
+        <div className="details">
+          <p><strong>Date:</strong> March 22</p>
+          <p><strong>Theme:</strong> Disney</p>
+          <p><strong>Venue:</strong> Pool</p>
+          <p><strong>Budget:</strong> $33.34</p>
+          <p><strong>Tasks:</strong> Finished</p>
+        </div>
+        <button className="home-button" onClick={() => navigate('/')}>Home</button>
+      </div>
+    </div>
+  );
 }
 
-export default Voting;
+export default Complete;

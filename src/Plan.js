@@ -27,15 +27,17 @@ function Plan() {
 
   return (
     <div className="container">
+      <div className="back-button">
+        <Link to="/home" className="btn btn-light rounded-circle shadow-sm back-icon">
+          <i className="bi bi-arrow-left"></i>
+        </Link>
+      </div>
       {/* Progress bar section */}
       <div className="progress-container">
         <div className="progress-bar" style={{ width: '10%' }} />
         <div className="progress-percentage">10%</div>
       </div>
 
-      <div className='back-button'>
-        <Link to="/home" className="button-tile">&lt;</Link>
-      </div>
       <h2>Plan</h2>
       <h3>Event Name</h3>
       <div className='color-block'>

@@ -25,25 +25,32 @@ function Login() {
   };
 
   return (
-    <div>
-      <h2>Log In</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleLogin}>
+  <div className="container mt-5" style={{ maxWidth: '400px' }}>
+    <h2 className="mb-4 text-center">Log In</h2>
+    {error && <p className="text-danger">{error}</p>}
+    
+    <form onSubmit={handleLogin}>
+      <div className="mb-3">
         <input
           type="email"
+          className="form-control"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required />
+      </div>
+      <div className="mb-3">
         <input
           type="password"
+          className="form-control"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required />
-        <button type="submit">Log In</button>
-      </form>
-    </div>
+      </div>
+      <button type="submit" className="btn btn-primary w-100">Log In</button>
+    </form>
+  </div>
   );
 }
 

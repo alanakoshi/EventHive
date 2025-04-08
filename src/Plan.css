@@ -3,5 +3,22 @@
 }
 
 .back-button {
-    margin-top: 20px;
-}
+    position: absolute;
+    top: 20px;
+    left: 20px;
+  }
+  
+  .back-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .back-icon:hover {
+    background-color: #ffcc91;
+    transform: scale(1.05);
+  }

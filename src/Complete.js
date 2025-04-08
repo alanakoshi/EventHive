@@ -8,7 +8,7 @@ function Voting() {
             <div className='progress-bar'>Progress Bar</div>
             <div className='percentage'>100%</div>
             <div className='back-button'>
-                <Link to="/budget" className="button-tile">&lt;</Link>
+                <Link to="/SplitBudget" className="button-tile">&lt;</Link>
             </div>
             <h2>Complete</h2>
             <div className="next-button">

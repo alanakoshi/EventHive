@@ -1,10 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import "./Home.css";
+import MenuSidebar from './components/MenuSideBar';
 
 function Home() {
   return (
     <div>
+      <MenuSidebar />
       <h1>EventHive</h1>
 
       <div className="event-card">

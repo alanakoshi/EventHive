@@ -1,0 +1,77 @@
+.hamburger {
+    font-size: 24px;
+    cursor: pointer;
+    padding: 10px;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+  }
+  
+  .backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -47%;
+    width: 33%;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.2);
+    z-index: 1002;
+    transition: left 0.3s ease;
+    padding: 20px;
+  }
+  
+  .sidebar.open {
+    left: 0;
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    float: right;
+    cursor: pointer;
+  }
+  
+  .sidebar-content {
+    margin-top: 40px;
+  }
+  
+  .profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+  }
+  
+  .email {
+    margin-bottom: 20px;
+    font-weight: bold;
+  }
+  
+  .sidebar-content ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .sidebar-content li {
+    margin: 12px 0;
+    cursor: pointer;
+  }
+  
+  .logout {
+    color: red;
+    font-weight: bold;
+  }
+  

@@ -1,0 +1,12 @@
+.btn-gold {
+    background-color: #E8C547;
+    border-color: #E8C547;
+    color: #000;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-gold:hover {
+    background-color: #B09537!important;
+    border-color: #B09537!important;
+    color: #000;
+}

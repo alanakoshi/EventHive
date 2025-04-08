@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom"; // import useNavigate
 import { auth } from '../../firebase'; // adjust the import path as needed
+import './Login.css';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -48,7 +49,9 @@ function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required />
       </div>
-      <button type="submit" className="btn btn-primary w-100">Log In</button>
+        <button type="submit" className="btn btn-gold w-100 text-white">
+          Log In
+        </button>
     </form>
   </div>
   );

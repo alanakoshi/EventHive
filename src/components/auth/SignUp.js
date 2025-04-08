@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase';
+import './SignUp.css';
 
 function SignUp() {
   const [name, setName] = useState('');
@@ -67,7 +68,8 @@ function SignUp() {
           />
         </div>
 
-        <button type="submit" className="btn btn-success w-100">Register</button>
+        <button type="submit" className="btn btn-brown w-100 text-white">
+          Sign Up</button>
       </form>
     </div>
   );

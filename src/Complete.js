@@ -15,7 +15,7 @@ function Voting() {
             </div>
             <h2>Complete</h2>
             <div className="next-button">
-                <Link to="/" className="button-tile">Home</Link>
+                <Link to="/home" className="button-tile">Home</Link>
             </div>
         </div>
     );

@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 
 function Events() {
   return (
-    <div>
+    <div className="container">
       <div className='back-button'>
-        <Link to="/" className="button-tile">&lt;</Link>
+        <Link to="/home" className="button-tile">&lt;</Link>
       </div>
-      <h2>Event Page</h2>
-      <p>This is the Event page content.</p>
+      <h1 className="text-center">Events</h1>
+      <p className="text-center">You have not create any events yet</p>
     </div>
   );
 }

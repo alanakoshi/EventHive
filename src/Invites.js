@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom';
 
 function Invites() {
   return (
-    <div>
+    <div className="container">
       <div className='back-button'>
-        <Link to="/" className="button-tile">&lt;</Link>
+        <Link to="/home" className="button-tile">&lt;</Link>
       </div>
-      <h2>Invites Page</h2>
-      <p>This is the Invites page content.</p>
+      <h1 className="text-center">Invites</h1>
+      <p className="text-center">You don't have any invites yet</p>
     </div>
   );
 }

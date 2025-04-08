@@ -34,7 +34,7 @@ function Plan() {
       </div>
 
       <div className='back-button'>
-        <Link to="/" className="button-tile">&lt;</Link>
+        <Link to="/home" className="button-tile">&lt;</Link>
       </div>
       <h2>Plan</h2>
       <h3>Event Name</h3>

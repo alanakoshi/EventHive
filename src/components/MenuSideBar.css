@@ -58,6 +58,10 @@
   .email {
     margin-bottom: 20px;
     font-weight: bold;
+    word-break: break-word;   /* Breaks long strings */
+    overflow-wrap: break-word;
+    max-width: 100%;          /* Prevents overflow */
+    white-space: normal;      /* Allows text to wrap */
   }
   
   .sidebar-content ul {

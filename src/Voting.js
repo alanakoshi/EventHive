@@ -7,7 +7,6 @@ import './App.css';
 function Voting() {
     const { eventOptions, votes, setVotes } = useContext(EventContext);
     const [selected, setSelected] = useState({ theme: '', venue: '', budget: '', date: '' });
-    const [showResults, setShowResults] = useState(false);
     // New state to track which option each user has voted for in each category
     const [userVotes, setUserVotes] = useState({});
 
@@ -39,27 +38,20 @@ function Voting() {
         // Update userVotes and selected for the category
         setUserVotes((prev) => ({ ...prev, [category]: option }));
         setSelected((prev) => ({ ...prev, [category]: option }));
-
-        // Automatically show the results once a vote is made for this category
-        setShowResults(true);
     };
 
+    // Update calculatePercentage so that once an option is selected in a category,
+    // the selected option shows 100% and all other options show 0%
     const calculatePercentage = (category, option) => {
-        const categoryVotes = votes[category] || {};
-        const totalVotes = Object.values(categoryVotes).reduce((sum, count) => sum + count, 0);
-        // If no votes yet, return 0%
-        if(totalVotes === 0) return '0';
-        // If only one vote exists, then the selected option gets 100%, others 0%
-        if(totalVotes === 1) {
+        if (selected[category]) {
             return selected[category] === option ? '100' : '0';
         }
-        // Otherwise, calculate the percentage normally
-        return ((categoryVotes[option] || 0) / totalVotes * 100).toFixed(0);
+        return '0';
     };
 
     const allCategoriesVoted = Object.keys(eventOptions).every(
         (category) => userVotes[category]
-      );
+    );
 
     return (
         <div className="container">
@@ -87,7 +79,7 @@ function Voting() {
                                 onClick={() => handleVote(category, option)}
                             >
                                 <span className="option-text">{option}</span>
-                                {showResults && (
+                                {selected[category] && (
                                     <span className="option-percentage"> - {calculatePercentage(category, option)}%</span>
                                 )}
                                 {selected[category] === option && (
@@ -100,15 +92,15 @@ function Voting() {
             ))}
             {/* Next button */}
             <div className="next-button-row">
-            {allCategoriesVoted ? (
-                <Link to="/final-result" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
-                Next
-                </Link>
-            ) : (
-                <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
-                Next
-                </button>
-            )}
+                {allCategoriesVoted ? (
+                    <Link to="/final-result" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+                        Next
+                    </Link>
+                ) : (
+                    <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+                        Next
+                    </button>
+                )}
             </div>
         </div>
     );

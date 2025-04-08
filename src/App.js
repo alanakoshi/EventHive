@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import AuthPage from "./components/auth/AuthPage";  // New AuthPage for login/signup
 import Home from "./Home";
 import Plan from "./Plan";
 import Invites from "./Invites";
@@ -24,7 +25,10 @@ function App() {
       <CohostProvider>
         <Router basename="/EventHive">
           <Routes>
-            <Route path="/" element={<Home />} />
+            {/* Default route to auth page */}
+            <Route path="/" element={<AuthPage />} />
+            {/* Other Routes */}
+            <Route path="/home" element={<Home />} />
             <Route path="/plan" element={<Plan />} />
             <Route path="/invites" element={<Invites />} />
             <Route path="/events" element={<Events />} />

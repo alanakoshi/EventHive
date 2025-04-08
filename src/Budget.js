@@ -58,7 +58,8 @@ function Budget() {
             className="event-input"
           />
         </div>
-        <div className='cohost-list'>
+      </div>
+      <div className='cohost-list'>
           {eventOptions.budget?.map((name, index) => (
             <div key={index} className="cohost-name-box">
               {name}
@@ -71,7 +72,6 @@ function Budget() {
             </div>
           ))}
         </div>
-      </div>
       {/* Next button */}
       <div className="next-button-row">
         <Link to="/voting" className="next-button">

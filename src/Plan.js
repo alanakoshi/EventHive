@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Plan.css';
 import './App.css';
-import './components/ProgressBar';
 
 function Plan() {
   const [eventName, setEventName] = useState("");
@@ -43,7 +42,7 @@ function Plan() {
         {/* Centered title */}
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Event Name</h1>
       </div>
-      <div className="color-block d-flex justify-content-center">
+      <div className="color-block">
         <div className='event-block'>
           {isSubmitted ? (
             <div className="event-name-box">

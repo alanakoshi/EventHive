@@ -1,13 +1,17 @@
-.next-button {
-    margin-top: 200px; /* Adjust the value as needed */
-}
+  .container h1 {
+    font-size: 30px;
+  }
+  
+  .next-button {
+      margin-top: 200px; /* Adjust the value as needed */
+  }
   .back-btn {
     background-color: #ffcf34;
   }
   .back-icon {
     color:white;
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     display: flex;
     justify-content: center;
     align-items: center;

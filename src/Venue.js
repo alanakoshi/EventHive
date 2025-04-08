@@ -58,19 +58,19 @@ function Venue() {
             className="event-input"
           />
         </div>
-        <div className='cohost-list'>
-          {eventOptions.venue?.map((name, index) => (
-            <div key={index} className="cohost-name-box">
-              {name}
-              <button 
-                className="remove-button" 
-                onClick={() => removeVenue(index)}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
+      </div>
+      <div className='cohost-list'>
+        {eventOptions.venue?.map((name, index) => (
+          <div key={index} className="cohost-name-box">
+            {name}
+            <button 
+              className="remove-button" 
+              onClick={() => removeVenue(index)}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
       </div>
       {/* Next button */}
       <div className="next-button-row">

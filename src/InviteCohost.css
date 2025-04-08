@@ -1,0 +1,49 @@
+/* Wrap input and cohost list in a centered container */
+.input-container {
+    max-width: 400px; /* Set to match your desired width */
+    margin: 0 auto;   /* Centers the container */
+  }
+  
+  /* Style for the input itself (if needed, adjust existing styles) */
+  .event-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  /* Cohost list container; center items if needed */
+  .cohost-list {
+    margin-top: 20px;
+  }
+  
+  /* Each cohost item box */
+  .cohost-name-box {
+    position: relative;      /* Position relative for absolute positioning of the button */
+    background-color: #f7f4db; /* Optional background color */
+    border-radius: 8px;
+    padding: 8px 40px 8px 12px; /* Padding: extra space on right for remove button */
+    margin: 8px auto;
+    text-align: left;
+  }
+  
+  /* Center the cohost name text */
+  .cohost-name {
+    display: block;
+    width: 100%;
+  }
+  
+  /* Remove button positioned at the right edge */
+  .remove-button {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #333;
+  }
+  

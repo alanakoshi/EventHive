@@ -1,16 +1,29 @@
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { useContext } from 'react';
 import { CohostContext } from './CohostContext';
-import './SplitBudget.css'; // or your preferred CSS file
+import { EventContext } from './EventContext';
+import './SplitBudget.css';
 import './App.css';
 
 function SplitBudget() {
   const { cohosts } = useContext(CohostContext);
-  const totalBudget = 100;
+  const { votes } = useContext(EventContext);
+
+  // Compute totalBudget based on highest voted budget amount.
+  // We assume votes.budget is an object with keys as budget values and values as vote counts.
+  let totalBudget = 0;
+  if (votes.budget && Object.keys(votes.budget).length > 0) {
+    totalBudget = Number(
+      Object.keys(votes.budget).reduce((prev, curr) =>
+        votes.budget[prev] >= votes.budget[curr] ? prev : curr
+      )
+    );
+  }
+
+  // Calculate split per cohost
   const numberOfCohosts = cohosts.length;
-  const splitAmount = numberOfCohosts > 0 
-    ? (totalBudget / numberOfCohosts).toFixed(2)
-    : "0.00";
+  const splitAmount =
+    numberOfCohosts > 0 ? (totalBudget / numberOfCohosts).toFixed(2) : "0.00";
 
   return (
     <div className="container">
@@ -23,16 +36,13 @@ function SplitBudget() {
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
         {/* Back button aligned left */}
         <Link to="/tasks" className="btn back-btn rounded-circle shadow-sm back-icon">
-          <i
-            className="bi bi-arrow-left-short"
-          ></i>
+          <i className="bi bi-arrow-left-short"></i>
         </Link>
-
         {/* Centered title */}
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Split Budget</h1>
       </div>
 
-      {/* Total amount */}
+      {/* Total amount display */}
       <div className="total-amount">Total: ${totalBudget.toFixed(2)}</div>
 
       {/* List of cohosts */}

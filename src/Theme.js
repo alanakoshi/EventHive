@@ -58,7 +58,8 @@ function Theme() {
             className="event-input"
           />
         </div>
-        <div className='cohost-list'>
+      </div>
+      <div className='cohost-list'>
           {eventOptions.theme?.map((name, index) => (
             <div key={index} className="cohost-name-box">
               {name}
@@ -71,7 +72,6 @@ function Theme() {
             </div>
           ))}
         </div>
-      </div>
       {/* Next button */}
       <div className="next-button-row">
         <Link to="/venue" className="next-button">

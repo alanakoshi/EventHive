@@ -10,7 +10,7 @@ function Home() {
         <MenuSidebar />
         <h1>EventHive</h1>
       </div>
-
+      <h2>Upcoming</h2>
       <div className="event-card">
         <div className="date-box">
           <div>18</div>
@@ -34,10 +34,22 @@ function Home() {
       </div>
 
       <div className="grid-buttons">
-        <Link to="/plan" className="button-tile button-plan">Plan</Link>
-        <Link to="/invites" className="button-tile">Invites</Link>
-        <Link to="/events" className="button-tile">Events</Link>
-        <Link to="/money" className="button-tile">Money</Link>
+        <Link to="/plan" className="button-tile">
+          <img src="./Clipboard.svg" alt="Plan" className="button-icon" />
+          <span>Plan</span>
+        </Link>
+        <Link to="/invites" className="button-tile">
+          <img src="./Mail.svg" alt="Invites" className="button-icon" />
+          <span>Invites</span>
+        </Link>
+        <Link to="/events" className="button-tile">
+          <img src="./Calendar.svg" alt="Events" className="button-icon" />
+          <span>Events</span>
+        </Link>
+        <Link to="/money" className="button-tile">
+          <img src="./Dollar sign.svg" alt="Money" className="button-icon" />
+          <span>Money</span>
+        </Link>
       </div>
     </div>
   );

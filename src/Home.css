@@ -1,4 +1,4 @@
-body {
+  body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 40px;
@@ -6,7 +6,7 @@ body {
   }
   
   h1 {
-    font-size: 24px;
+    font-size: 36px;
     font-weight: bold;
     margin-bottom: 20px;
   }
@@ -58,8 +58,8 @@ body {
     margin-top: 30px;
   }
   
-  .button-tile {
-    background-color: #f7f4db;
+  .grid-buttons .button-tile {
+    background-color: #FDF9DC;  /*Updated tile color*/
     border-radius: 16px;
     text-align: center;
     padding: 20px;
@@ -67,12 +67,20 @@ body {
     cursor: pointer;
     box-shadow: 1px 2px 5px rgba(0,0,0,0.1);
     transition: background 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
-  
+
+  .button-tile span {
+    margin-top: 8px; /* adds some spacing between the icon and the text */
+  }
+
   .button-tile:hover {
     background-color: #f0e6b0;
   }
-  
+    
   .button-back {
     background-color: #ffffff;
   }

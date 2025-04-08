@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { CohostContext } from './CohostContext';
 import './InviteCohost.css';
 import './App.css';
-import './components/ProgressBar';
 
 function InviteCohost() {
   const { cohosts, setCohosts } = useContext(CohostContext);
@@ -43,7 +42,6 @@ function InviteCohost() {
         {/* Centered title */}
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Invite Cohost</h1>
       </div>
-      <h3>Add Cohost</h3>
       <div className='color-block'>
         <div className='event-block'>
           <input 
@@ -55,19 +53,19 @@ function InviteCohost() {
             className="event-input"
           />
         </div>
-        <div className='cohost-list'>
-          {cohosts.map((name, index) => (
-            <div key={index} className="cohost-name-box">
-              {name}
-              <button 
-                className="remove-button" 
-                onClick={() => removeCohost(index)}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
+      </div>
+      <div className='cohost-list'>
+        {cohosts.map((name, index) => (
+          <div key={index} className="cohost-name-box">
+            {name}
+            <button 
+              className="remove-button" 
+              onClick={() => removeCohost(index)}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
       </div>
       {/* Next button */}
       <div className="next-button-row">

@@ -1,7 +1,7 @@
 import React from 'react';
 import './Complete.css';
 import { useNavigate } from 'react-router-dom';
-
+ 
 function Complete() {
   const navigate = useNavigate();
 

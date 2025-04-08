@@ -48,12 +48,18 @@
   }
   
   .profile-pic {
-    width: 80px;
-    height: 80px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
-    object-fit: cover;
+    background-color: #ffcf33; /* Or any preferred color */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
     margin-bottom: 10px;
-  }
+  }  
   
   .email {
     margin-bottom: 20px;

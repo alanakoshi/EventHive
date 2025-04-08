@@ -6,6 +6,7 @@ import './MenuSideBar.css';
 function MenuSideBar() {
   const [isOpen, setIsOpen] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,8 +14,11 @@ function MenuSideBar() {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserEmail(user.email);
+        // Set userName to the display name, or if not provided, use the first letter of email
+        setUserName(user.displayName || user.email.charAt(0).toUpperCase());
       } else {
         setUserEmail('');
+        setUserName('');
       }
     });
     // Cleanup the subscription on unmount.
@@ -45,7 +49,10 @@ function MenuSideBar() {
       {/* Sidebar menu */}
       <div className={`sidebar ${isOpen ? 'open' : ''}`}>
         <div className="sidebar-content">
-          <img src="/profile.jpg" alt="Profile" className="profile-pic" />
+          {/* Instead of an <img>, show a circle with the first letter of the user's name */}
+          <div className="profile-pic">
+            {userName ? userName.charAt(0).toUpperCase() : "G"}
+          </div>
           <p className="email">{userEmail || "Guest"}</p>
           <ul>
             <li>Privacy</li>

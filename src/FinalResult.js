@@ -30,10 +30,17 @@ function FinalResult() {
                 <div className="progress-bar" style={{ width: '70%' }} />
                 <div className="progress-percentage">70%</div>
             </div>
-            <div className='back-button'>
-                <Link to="/voting" className="button-tile">&lt;</Link>
-            </div>
-            <h2>Final Result</h2>
+            <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
+        {/* Back button aligned left */}
+        <Link to="/voting" className="btn back-btn rounded-circle shadow-sm back-icon">
+          <i
+            className="bi bi-arrow-left-short"
+          ></i>
+        </Link>
+
+        {/* Centered title */}
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Final Result</h1>
+      </div>
 
             {/* Display the highest votes for each category */}
             {['theme', 'venue', 'budget', 'dates'].map((category) => (

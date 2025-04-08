@@ -43,10 +43,17 @@ function Tasks() {
         <div className="progress-bar" style={{ width: '80%' }} />
         <div className="progress-percentage">80%</div>
       </div>
-      <div className='back-button'>
-        <Link to="/final-result" className="button-tile">&lt;</Link>
+      <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
+        {/* Back button aligned left */}
+        <Link to="/final-result" className="btn back-btn rounded-circle shadow-sm back-icon">
+          <i
+            className="bi bi-arrow-left-short"
+          ></i>
+        </Link>
+
+        {/* Centered title */}
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Tasks</h1>
       </div>
-      <h2>Tasks</h2>
 
       {cohosts.map((cohost, idx) => (
         <div key={idx} className="color-block">

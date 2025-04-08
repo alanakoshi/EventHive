@@ -36,10 +36,17 @@ function Theme() {
         <div className="progress-bar" style={{ width: '40%' }} />
         <div className="progress-percentage">40%</div>
       </div>
-      <div className='back-button'>
-        <Link to="/date" className="button-tile">&lt;</Link>
+      <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
+        {/* Back button aligned left */}
+        <Link to="/date" className="btn back-btn rounded-circle shadow-sm back-icon">
+          <i
+            className="bi bi-arrow-left-short"
+          ></i>
+        </Link>
+
+        {/* Centered title */}
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Theme</h1>
       </div>
-      <h2>Theme</h2>
       <div className='color-block'>
         <div className='event-block'>
           <input

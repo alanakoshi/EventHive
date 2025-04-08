@@ -64,10 +64,17 @@ function Voting() {
             <div className="progress-bar" style={{ width: '70%' }} />
             <div className="progress-percentage">70%</div>
         </div>
-            <div className='back-button'>
-                <Link to="/budget" className="button-tile">&lt;</Link>
-            </div>
-            <h2>Voting</h2>
+        <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
+            {/* Back button aligned left */}
+            <Link to="/budget" className="btn back-btn rounded-circle shadow-sm back-icon">
+            <i
+                className="bi bi-arrow-left-short"
+            ></i>
+            </Link>
+
+            {/* Centered title */}
+            <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Voting</h1>
+        </div>
             {Object.keys(eventOptions).map((category) => (
                 <div key={category}>
                     <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>

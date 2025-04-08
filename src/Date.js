@@ -100,13 +100,17 @@ function Date() {
         <div className="progress-percentage">30%</div>
       </div>
       
-      {/* Back Button */}
-      <div className="back-button">
-        <Link to="/invite-cohost" className="button-tile">&lt;</Link>
+      <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
+        {/* Back button aligned left */}
+        <Link to="/invite-cohost" className="btn back-btn rounded-circle shadow-sm back-icon">
+          <i
+            className="bi bi-arrow-left-short"
+          ></i>
+        </Link>
+
+        {/* Centered title */}
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Date</h1>
       </div>
-      
-      {/* Title */}
-      <h2>Date</h2>
       
       {/* Month/Year Navigation Header */}
       <div className="calendar-header">

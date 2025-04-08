@@ -27,20 +27,23 @@ function Plan() {
 
   return (
     <div className="container">
-      <div className="back-button">
-        <Link to="/home" className="btn btn-light rounded-circle shadow-sm back-icon">
-          <i className="bi bi-arrow-left"></i>
-        </Link>
-      </div>
-      {/* Progress bar section */}
       <div className="progress-container">
         <div className="progress-bar" style={{ width: '10%' }} />
         <div className="progress-percentage">10%</div>
       </div>
 
-      <h2>Plan</h2>
-      <h3>Event Name</h3>
-      <div className='color-block'>
+      <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
+        {/* Back button aligned left */}
+        <Link to="/home" className="btn back-btn rounded-circle shadow-sm back-icon">
+          <i
+            className="bi bi-arrow-left-short"
+          ></i>
+        </Link>
+
+        {/* Centered title */}
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Event Name</h1>
+      </div>
+      <div className="color-block d-flex justify-content-center">
         <div className='event-block'>
           {isSubmitted ? (
             <div className="event-name-box">

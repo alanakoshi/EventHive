@@ -32,10 +32,17 @@ function InviteCohost() {
         <div className="progress-bar" style={{ width: '20%' }} />
         <div className="progress-percentage">20%</div>
       </div>
-      <div className='back-button'>
-        <Link to="/plan" className="button-tile">&lt;</Link>
+      <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
+        {/* Back button aligned left */}
+        <Link to="/plan" className="btn back-btn rounded-circle shadow-sm back-icon">
+          <i
+            className="bi bi-arrow-left-short"
+          ></i>
+        </Link>
+
+        {/* Centered title */}
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Invite Cohost</h1>
       </div>
-      <h2>Invite Cohost</h2>
       <h3>Add Cohost</h3>
       <div className='color-block'>
         <div className='event-block'>

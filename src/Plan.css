@@ -1,14 +1,11 @@
 .next-button {
     margin-top: 200px; /* Adjust the value as needed */
 }
-
-.back-button {
-    position: absolute;
-    top: 20px;
-    left: 20px;
+  .back-btn {
+    background-color: #ffcf34;
   }
-  
   .back-icon {
+    color:white;
     width: 40px;
     height: 40px;
     display: flex;
@@ -19,6 +16,7 @@
   }
   
   .back-icon:hover {
-    background-color: #ffcc91;
+    color: white;
+    background-color: #B09537;
     transform: scale(1.05);
   }

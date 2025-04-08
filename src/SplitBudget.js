@@ -20,10 +20,16 @@ function SplitBudget() {
         <div className="progress-percentage">90%</div>
       </div>
 
-      {/* Header */}
-      <div className="header-row">
-        <Link to="/tasks" className="back-button">&lt;</Link>
-        <h2 className="split-budget-title">Split Budget</h2>
+      <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
+        {/* Back button aligned left */}
+        <Link to="/tasks" className="btn back-btn rounded-circle shadow-sm back-icon">
+          <i
+            className="bi bi-arrow-left-short"
+          ></i>
+        </Link>
+
+        {/* Centered title */}
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Split Budget</h1>
       </div>
 
       {/* Total amount */}

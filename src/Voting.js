@@ -57,6 +57,10 @@ function Voting() {
         return ((categoryVotes[option] || 0) / totalVotes * 100).toFixed(0);
     };
 
+    const allCategoriesVoted = Object.keys(eventOptions).every(
+        (category) => userVotes[category]
+      );
+
     return (
         <div className="container">
             {/* Progress bar section */}
@@ -96,7 +100,15 @@ function Voting() {
             ))}
             {/* Next button */}
             <div className="next-button-row">
-                <Link to="/final-result" className="next-button">Next</Link>
+            {allCategoriesVoted ? (
+                <Link to="/final-result" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+                Next
+                </Link>
+            ) : (
+                <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+                Next
+                </button>
+            )}
             </div>
         </div>
     );

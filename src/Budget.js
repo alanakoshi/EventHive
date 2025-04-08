@@ -7,17 +7,40 @@ import './App.css';
 function Budget() {
   const [budgetName, setBudgetName] = useState("");
   const { eventOptions, setEventOptions } = useContext(EventContext);
+  const [showWarning, setShowWarning] = useState(false);
+
 
   const handleInputChange = (e) => {
-    setBudgetName(e.target.value);
+    const rawValue = e.target.value;
+  
+    // Allow only numbers and one optional dot
+    const sanitized = rawValue.replace(/[^0-9.]/g, '');
+  
+    // Prevent multiple dots
+    const dotCount = (sanitized.match(/\./g) || []).length;
+    if (dotCount > 1) return;
+  
+    setBudgetName(sanitized);
   };
+  
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && budgetName.trim() !== "") {
+    if (e.key === 'Enter') {
+      const value = parseFloat(budgetName);
+  
+      if (isNaN(value)) {
+        setShowWarning(true);
+        setTimeout(() => setShowWarning(false), 2000);
+        return;
+      }
+  
+      const formatted = `$${value.toFixed(2)}`;
+  
       setEventOptions((prevOptions) => ({
         ...prevOptions,
-        budget: [...(prevOptions.budget || []), budgetName]
+        budget: [...(prevOptions.budget || []), formatted],
       }));
+  
       setBudgetName("");
     }
   };
@@ -48,16 +71,21 @@ function Budget() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Budget</h1>
       </div>
       <div className='color-block'>
-        <div className='event-block'>
-          <input 
-            type="text" 
-            placeholder="Enter a budget" 
-            value={budgetName} 
-            onChange={handleInputChange} 
-            onKeyDown={handleKeyPress}
-            className="event-input"
-          />
-        </div>
+      <div className='event-block'>
+        <input 
+          type="text" 
+          placeholder="Enter a budget" 
+          value={budgetName} 
+          onChange={handleInputChange} 
+          onKeyDown={handleKeyPress}
+          className="event-input"
+        />
+        {showWarning && (
+          <div className="alert-popup">
+            Please enter a budget item before continuing.
+          </div>
+        )}
+      </div>
       </div>
       <div className='cohost-list'>
           {eventOptions.budget?.map((name, index) => (
@@ -74,9 +102,15 @@ function Budget() {
         </div>
       {/* Next button */}
       <div className="next-button-row">
-        <Link to="/voting" className="next-button">
-          Next
-        </Link>
+        {eventOptions.budget?.length > 0 ? (
+          <Link to="/voting" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+            Next
+          </Link>
+        ) : (
+          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+            Next
+          </button>
+        )}
       </div>
     </div>
   );

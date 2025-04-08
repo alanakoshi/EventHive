@@ -13,12 +13,12 @@ function SplitBudget() {
   // We assume votes.budget is an object with keys as budget values and values as vote counts.
   let totalBudget = 0;
   if (votes.budget && Object.keys(votes.budget).length > 0) {
-    totalBudget = Number(
-      Object.keys(votes.budget).reduce((prev, curr) =>
-        votes.budget[prev] >= votes.budget[curr] ? prev : curr
-      )
+    const highestVotedBudget = Object.keys(votes.budget).reduce((prev, curr) =>
+      votes.budget[prev] >= votes.budget[curr] ? prev : curr
     );
-  }
+    // Remove $ and parse as float
+    totalBudget = parseFloat(highestVotedBudget.replace(/[^0-9.]/g, '')) || 0;
+  }  
 
   // Calculate split per cohost
   const numberOfCohosts = cohosts.length;

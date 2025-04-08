@@ -7,18 +7,25 @@ import './App.css';
 function Theme() {
   const [themeName, setThemeName] = useState("");
   const { eventOptions, setEventOptions } = useContext(EventContext);
+  const [showWarning, setShowWarning] = useState(false);
+
 
   const handleInputChange = (e) => {
     setThemeName(e.target.value);
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && themeName.trim() !== "") {
-      setEventOptions((prevOptions) => ({
-        ...prevOptions,
-        theme: [...(prevOptions.theme || []), themeName]
-      }));
-      setThemeName("");
+    if (e.key === 'Enter') {
+      if (themeName.trim() === "") {
+        setShowWarning(true);
+        setTimeout(() => setShowWarning(false), 2000);
+      } else {
+        setEventOptions((prevOptions) => ({
+          ...prevOptions,
+          theme: [...(prevOptions.theme || []), themeName]
+        }));
+        setThemeName("");
+      }
     }
   };
 
@@ -72,11 +79,22 @@ function Theme() {
             </div>
           ))}
         </div>
+        {showWarning && (
+        <div className="alert-popup">
+          Please enter a theme before continuing.
+        </div>
+      )}
       {/* Next button */}
       <div className="next-button-row">
-        <Link to="/venue" className="next-button">
-          Next
-        </Link>
+        {eventOptions.theme?.length > 0 ? (
+          <Link to="/venue" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+            Next
+          </Link>
+        ) : (
+          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+            Next
+          </button>
+        )}
       </div>
     </div>
   );

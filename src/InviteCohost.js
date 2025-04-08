@@ -7,15 +7,22 @@ import './App.css';
 function InviteCohost() {
   const { cohosts, setCohosts } = useContext(CohostContext);
   const [cohostName, setCohostName] = useState("");
+  const [showWarning, setShowWarning] = useState(false);
+
 
   const handleInputChange = (e) => {
     setCohostName(e.target.value);
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && cohostName.trim() !== "") {
-      setCohosts([...cohosts, cohostName]);
-      setCohostName("");
+    if (e.key === 'Enter') {
+      if (cohostName.trim() === "") {
+        setShowWarning(true);
+        setTimeout(() => setShowWarning(false), 2000); // auto-hide after 2s
+      } else {
+        setCohosts([...cohosts, cohostName]);
+        setCohostName("");
+      }
     }
   };
 
@@ -67,11 +74,21 @@ function InviteCohost() {
           </div>
         ))}
       </div>
-      {/* Next button */}
+      {showWarning && (
+        <div className="alert-popup">
+          Please enter a cohost name before continuing.
+        </div>
+      )}
       <div className="next-button-row">
-        <Link to="/date" className="next-button">
-          Next
-        </Link>
+        {cohosts.length > 0 ? (
+          <Link to="/date" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+            Next
+          </Link>
+        ) : (
+          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666' }}>
+            Next
+          </button>
+        )}
       </div>
     </div>
   );

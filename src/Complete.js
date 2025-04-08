@@ -24,7 +24,7 @@ function Voting() {
             {/* Next button */}
       <div className="next-button-row">
         <Link to="/home" className="next-button">
-          Next
+          Home
         </Link>
       </div>
         </div>

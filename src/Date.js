@@ -165,11 +165,17 @@ function Date() {
         </div>
       </div>
       
-      {/* Next button */}
+      {/* Next button*/}
       <div className="next-button-row">
-        <Link to="/theme" className="next-button">
-          Next
-        </Link>
+        {selectedDates.length > 0 ? (
+          <Link to="/theme" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+            Next
+          </Link>
+        ) : (
+          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+            Next
+          </button>
+        )}
       </div>
     </div>
   );

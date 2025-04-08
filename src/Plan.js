@@ -2,20 +2,28 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Plan.css';
 import './App.css';
+import { useEffect } from 'react';
 
 function Plan() {
   const [eventName, setEventName] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
 
   const handleInputChange = (e) => {
     setEventName(e.target.value);
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && eventName.trim() !== "") {
-      setIsSubmitted(true);
-      setIsEditing(false);
+    if (e.key === 'Enter') {
+      if (eventName.trim() === "") {
+        setShowWarning(true);
+        setTimeout(() => setShowWarning(false), 2000); // Hide after 2s
+      } else {
+        localStorage.setItem("eventName", eventName);
+        setIsSubmitted(true);
+        setIsEditing(false);
+      }
     }
   };
 
@@ -23,6 +31,15 @@ function Plan() {
     setIsEditing(true);
     setIsSubmitted(false);
   };
+
+  useEffect(() => {
+    const stored = localStorage.getItem("eventName");
+    if (stored) {
+      setEventName(stored);
+      setIsSubmitted(true);
+      localStorage.removeItem("eventName"); // remove after using
+    }
+  }, []);
 
   return (
     <div className="container">
@@ -61,11 +78,22 @@ function Plan() {
           )}
         </div>
       </div>
+            {showWarning && (
+        <div className="alert-popup">
+          Please enter an event name before continuing.
+        </div>
+      )}
       {/* Next button */}
       <div className="next-button-row">
-        <Link to="/invite-cohost" className="next-button">
-          Next
-        </Link>
+        {isSubmitted ? (
+          <Link to="/invite-cohost" className="next-button active">
+            Next
+          </Link>
+        ) : (
+          <button className="next-button disabled" disabled>
+            Next
+          </button>
+        )}
       </div>
     </div>
   );

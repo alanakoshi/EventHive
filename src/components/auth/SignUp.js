@@ -3,6 +3,7 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../../firebase';
 import './SignUp.css';
+import { addUserToFirestore } from '../../firebaseHelpers';
 
 function SignUp() {
   const [name, setName] = useState('');    // Full Name input
@@ -15,14 +16,14 @@ function SignUp() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     try {
-      // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      
-      // Update the user's profile with the entered name
       await updateProfile(userCredential.user, { displayName: name });
-      
+  
+      // Add user to Firestore
+      await addUserToFirestore(userCredential.user.uid, name, email);
+  
       console.log('User registered:', userCredential.user);
-      navigate('/home');  // Redirect to home (or your desired route)
+      navigate('/home');
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
         setError("Email already in use.");

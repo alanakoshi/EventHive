@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { CohostContext } from './CohostContext';
 import './InviteCohost.css';
 import './App.css';
+import { updateEventInFirestore } from './firebaseHelpers';
 
 function InviteCohost() {
   const { cohosts, setCohosts } = useContext(CohostContext);
@@ -12,6 +13,11 @@ function InviteCohost() {
 
   const handleInputChange = (e) => {
     setCohostName(e.target.value);
+  };
+
+  const handleNext = async () => {
+    const eventID = localStorage.getItem("eventID");
+    await updateEventInFirestore(eventID, { cohosts });
   };
 
   const handleKeyPress = (e) => {
@@ -81,7 +87,7 @@ function InviteCohost() {
       )}
       <div className="next-button-row">
         {cohosts.length > 0 ? (
-          <Link to="/date" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/date" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>
         ) : (

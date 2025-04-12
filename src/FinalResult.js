@@ -43,7 +43,7 @@ function FinalResult() {
       </div>
 
             {/* Display the highest votes for each category */}
-            {['theme', 'venue', 'budget', 'dates'].map((category) => (
+            {['theme', 'venue', 'dates'].map((category) => (
                 <div key={category}>
                     <h3>{category.charAt(0).toUpperCase() + category.slice(1)}:</h3>
                     <p>{getHighestVoteOption(category)}</p>

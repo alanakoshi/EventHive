@@ -3,13 +3,18 @@ import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Theme.css';
 import './App.css';
+import { updateEventInFirestore } from './firebaseHelpers';
 
 function Theme() {
   const [themeName, setThemeName] = useState("");
   const { eventOptions, setEventOptions } = useContext(EventContext);
   const [showWarning, setShowWarning] = useState(false);
 
-
+  const handleNext = async () => {
+    const eventID = localStorage.getItem("eventID");
+    await updateEventInFirestore(eventID, { theme: eventOptions.theme });
+  };
+  
   const handleInputChange = (e) => {
     setThemeName(e.target.value);
   };
@@ -87,7 +92,7 @@ function Theme() {
       {/* Next button */}
       <div className="next-button-row">
         {eventOptions.theme?.length > 0 ? (
-          <Link to="/venue" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/venue" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>
         ) : (

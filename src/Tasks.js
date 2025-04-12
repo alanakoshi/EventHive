@@ -2,6 +2,8 @@ import React, { useContext, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { CohostContext } from './CohostContext';
+import { auth } from './firebase';
+import { addTaskToFirestore, fetchTasksForEvent } from './firebaseHelpers';
 import './App.css';
 import './Voting.css';
 
@@ -12,35 +14,30 @@ function Tasks() {
   // State for the current user's name
   const [myName, setMyName] = useState('');
 
-  // Listen for authentication state changes to get the current user's name
+  const eventID = localStorage.getItem("eventID");
+  
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setMyName(user.displayName || user.email || '');
-      } else {
-        setMyName('');
-      }
-    });
-    return () => unsubscribe();
+    if (auth.currentUser) {
+      setMyName(auth.currentUser.displayName || auth.currentUser.email);
+    }
   }, []);
 
-  // Merge the current user's name with the cohosts.
-  // If no cohosts exist, default to just your name.
-  // If cohosts exist and your name is not included, add it.
   const allCohosts = myName
-    ? (cohosts.length === 0 ? [myName] : (cohosts.includes(myName) ? cohosts : [myName, ...cohosts]))
+    ? (cohosts.includes(myName) ? cohosts : [myName, ...cohosts])
     : cohosts;
 
-  const handleAddTask = (cohost, taskText) => {
-    if (!taskText.trim()) return;
-    const newTask = { text: taskText, completed: false };
+  const handleAddTask = async (cohost, text) => {
+    if (!text.trim()) return;
+    
+    await addTaskToFirestore(eventID, cohost, text);
+
+    const newTask = { text, completed: false };
     setTasks(prev => ({
       ...prev,
       [cohost]: [...(prev[cohost] || []), newTask],
     }));
   };
-
+  
   const handleDeleteTask = (cohost, index) => {
     const updated = tasks[cohost].filter((_, i) => i !== index);
     setTasks(prev => ({ ...prev, [cohost]: updated }));
@@ -101,7 +98,7 @@ function Tasks() {
 
       {/* Next button */}
       <div className="next-button-row">
-        <Link to="/split-budget" className="next-button">
+        <Link to="/complete" className="next-button">
           Next
         </Link>
       </div>

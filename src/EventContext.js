@@ -6,14 +6,12 @@ export const EventProvider = ({ children }) => {
     const [eventOptions, setEventOptions] = useState({
         theme: [],
         venue: [],
-        budget: [],
         dates: [],  // Changed "date" to "dates"
     });
 
     const [votes, setVotes] = useState({
         theme: {},
         venue: {},
-        budget: {},
         dates: {},  // Changed "date" to "dates"
     });
 

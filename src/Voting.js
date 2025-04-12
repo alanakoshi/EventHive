@@ -3,41 +3,44 @@ import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Voting.css';
 import './App.css';
+import { addVoteToFirestore } from './firebaseHelpers';
+import { auth } from './firebase';
 
 function Voting() {
     const { eventOptions, votes, setVotes } = useContext(EventContext);
     const [selected, setSelected] = useState({ theme: '', venue: '', budget: '', date: '' });
     // New state to track which option each user has voted for in each category
     const [userVotes, setUserVotes] = useState({});
+    const eventID = localStorage.getItem("eventID");
 
-    const handleVote = (category, option) => {
+    const handleVote = async (category, option) => {
         // Prevent voting twice for the same option in this category
         if (userVotes[category] === option) {
             return;
         }
         
-        // Update votes in one state update for this category
+        // Update votes in Firestore
+        await addVoteToFirestore(eventID, auth.currentUser.uid, category, option);
+        
+        // Update local state (EventContext)
         setVotes((prevVotes) => {
-            // Get current votes for the category (or an empty object if none)
             const currentVotes = { ...(prevVotes[category] || {}) };
-
-            // If there was a previous vote by this user in this category, decrement its count (ensuring it doesn’t go below 0)
+        
             if (userVotes[category]) {
-                currentVotes[userVotes[category]] = Math.max((currentVotes[userVotes[category]] || 0) - 1, 0);
+            currentVotes[userVotes[category]] = Math.max((currentVotes[userVotes[category]] || 0) - 1, 0);
             }
-
-            // Increment the selected option's vote count
+        
             currentVotes[option] = (currentVotes[option] || 0) + 1;
-
+        
             return {
-                ...prevVotes,
-                [category]: currentVotes
+            ...prevVotes,
+            [category]: currentVotes
             };
-        });
-
-        // Update userVotes and selected for the category
-        setUserVotes((prev) => ({ ...prev, [category]: option }));
-        setSelected((prev) => ({ ...prev, [category]: option }));
+      });
+    
+      // Update which option the user voted for in local state
+      setUserVotes((prev) => ({ ...prev, [category]: option }));
+      setSelected((prev) => ({ ...prev, [category]: option }));
     };
 
     // Update calculatePercentage so that once an option is selected in a category,
@@ -62,7 +65,7 @@ function Voting() {
             </div>
             <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
                 {/* Back button aligned left */}
-                <Link to="/budget" className="btn back-btn rounded-circle shadow-sm back-icon">
+                <Link to="/venue" className="btn back-btn rounded-circle shadow-sm back-icon">
                     <i className="bi bi-arrow-left-short"></i>
                 </Link>
                 {/* Centered title */}

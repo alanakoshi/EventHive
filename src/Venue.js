@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Venue.css';
 import './App.css';
+import { updateEventInFirestore } from './firebaseHelpers';
 
 function Venue() {
   const [venueName, setVenueName] = useState("");
@@ -13,6 +14,11 @@ function Venue() {
     setVenueName(e.target.value);
   };
 
+  const handleNext = async () => {
+    const eventID = localStorage.getItem("eventID");
+    await updateEventInFirestore(eventID, { theme: eventOptions.theme });
+  };
+  
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       if (venueName.trim() === "") {
@@ -86,7 +92,7 @@ function Venue() {
       {/* Next button */}
       <div className="next-button-row">
         {eventOptions.venue?.length > 0 ? (
-          <Link to="/budget" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/voting" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>
         ) : (

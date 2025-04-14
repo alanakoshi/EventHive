@@ -1,8 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import "./Home.css";
 import MenuSidebar from './components/MenuSideBar';
-import { useEffect, useState } from 'react';
 import { fetchUserEvents } from './firebaseHelpers';
 import { auth } from './firebase';
 
@@ -26,13 +25,15 @@ function Home() {
         <MenuSidebar />
         <h1>EventHive</h1>
       </div>
+
       <div className="grid-buttons">
         <Link to="/plan" className="button-tile">
-          <img src="./Clipboard.svg" alt="Plan" className="button-icon" />
+          <img src={`${process.env.PUBLIC_URL}/Clipboard.svg`} alt="Plan" className="button-icon" />
           <span>Plan</span>
         </Link>
+
         <Link to="/events" className="button-tile">
-          <img src="./Calendar.svg" alt="Events" className="button-icon" />
+          <img src={`${process.env.PUBLIC_URL}/Calendar.svg`} alt="Events" className="button-icon" />
           <span>Events</span>
         </Link>
       </div>

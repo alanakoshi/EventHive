@@ -1,10 +1,10 @@
 // Venue.js
-import { useState, useContext, useRef } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Venue.css';
 import './App.css';
-import { updateEventInFirestore } from './firebaseHelpers';
+import { updateEventInFirestore, fetchEventByID } from './firebaseHelpers';
 
 function Venue() {
   const [venueName, setVenueName] = useState("");
@@ -15,29 +15,40 @@ function Venue() {
   const inputRef = useRef(null);
   const editRef = useRef(null);
 
+  useEffect(() => {
+    const loadSavedVenues = async () => {
+      const eventID = localStorage.getItem("eventID");
+      if (eventID) {
+        const event = await fetchEventByID(eventID);
+        if (event?.venue) {
+          setEventOptions((prev) => ({ ...prev, venue: event.venue }));
+        }
+      }
+    };
+    loadSavedVenues();
+  }, [setEventOptions]);
+
   const handleInputChange = (e) => {
     setVenueName(e.target.value);
   };
 
-  const tryAddVenue = () => {
-    if (venueName.trim() === "") return;
-    const updatedVenues = [...(eventOptions.venue || []), venueName];
-    setEventOptions((prevOptions) => ({
-      ...prevOptions,
-      venue: updatedVenues,
-    }));
-    setVenueName("");
-
-    const eventID = localStorage.getItem("eventID");
-    updateEventInFirestore(eventID, { venue: updatedVenues });
-  };
-
   const handleNext = async () => {
-    if (venueName.trim() !== "") {
-      tryAddVenue();
-    }
     const eventID = localStorage.getItem("eventID");
     await updateEventInFirestore(eventID, { venue: eventOptions.venue });
+  };
+
+  const tryAddVenue = () => {
+    if (venueName.trim() === "") {
+      setShowWarning(true);
+      setTimeout(() => setShowWarning(false), 2000);
+    } else {
+      const updatedVenues = [...(eventOptions.venue || []), venueName];
+      setEventOptions((prevOptions) => ({ ...prevOptions, venue: updatedVenues }));
+      setVenueName("");
+
+      const eventID = localStorage.getItem("eventID");
+      updateEventInFirestore(eventID, { venue: updatedVenues });
+    }
   };
 
   const handleEditClick = (index) => {
@@ -63,10 +74,7 @@ function Venue() {
 
   const removeVenue = (index) => {
     const updatedVenues = eventOptions.venue.filter((_, i) => i !== index);
-    setEventOptions((prev) => ({
-      ...prev,
-      venue: updatedVenues,
-    }));
+    setEventOptions((prev) => ({ ...prev, venue: updatedVenues }));
 
     const eventID = localStorage.getItem("eventID");
     updateEventInFirestore(eventID, { venue: updatedVenues });
@@ -135,7 +143,7 @@ function Venue() {
       </div>
 
       <div className="next-button-row">
-        {eventOptions.venue?.length > 0 || venueName.trim() !== "" ? (
+        {eventOptions.venue?.length > 0 ? (
           <Link to="/voting" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>

@@ -1,9 +1,10 @@
-import { useState, useContext, useRef } from 'react';
+// Theme.js
+import { useState, useContext, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Theme.css';
 import './App.css';
-import { updateEventInFirestore } from './firebaseHelpers';
+import { updateEventInFirestore, fetchEventByID } from './firebaseHelpers';
 
 function Theme() {
   const [themeName, setThemeName] = useState("");
@@ -13,23 +14,36 @@ function Theme() {
   const [editingValue, setEditingValue] = useState("");
   const inputRef = useRef(null);
   const editRef = useRef(null);
+
+  useEffect(() => {
+    const loadSavedThemes = async () => {
+      const eventID = localStorage.getItem("eventID");
+      if (eventID) {
+        const event = await fetchEventByID(eventID);
+        if (event?.theme) {
+          setEventOptions((prev) => ({ ...prev, theme: event.theme }));
+        }
+      }
+    };
+    loadSavedThemes();
+  }, [setEventOptions]);
+
   const handleNext = async () => {
     const eventID = localStorage.getItem("eventID");
     await updateEventInFirestore(eventID, { theme: eventOptions.theme });
   };
-  
+
   const handleInputChange = (e) => setThemeName(e.target.value);
   const handleEditChange = (e) => setEditingValue(e.target.value);
 
   const tryAddTheme = () => {
     const trimmed = themeName.trim();
     if (trimmed === "") return;
-    setEventOptions((prevOptions) => ({
-      ...prevOptions,
-      theme: [...(prevOptions.theme || []), trimmed],
-    }));
+    const updatedThemes = [...(eventOptions.theme || []), trimmed];
+    setEventOptions((prevOptions) => ({ ...prevOptions, theme: updatedThemes }));
     setThemeName("");
-    setShowWarning(false);
+    const eventID = localStorage.getItem("eventID");
+    updateEventInFirestore(eventID, { theme: updatedThemes });
   };
 
   const trySaveEdit = () => {
@@ -40,10 +54,9 @@ function Theme() {
     } else {
       const updatedThemes = [...eventOptions.theme];
       updatedThemes[editingIndex] = trimmed;
-      setEventOptions((prevOptions) => ({
-        ...prevOptions,
-        theme: updatedThemes,
-      }));
+      setEventOptions((prevOptions) => ({ ...prevOptions, theme: updatedThemes }));
+      const eventID = localStorage.getItem("eventID");
+      updateEventInFirestore(eventID, { theme: updatedThemes });
       setEditingIndex(null);
       setEditingValue("");
     }
@@ -56,22 +69,18 @@ function Theme() {
   const handleEditClick = (index) => {
     setEditingIndex(index);
     setEditingValue(eventOptions.theme[index]);
-    setTimeout(() => {
-      editRef.current?.focus();
-    }, 0);
+    setTimeout(() => editRef.current?.focus(), 0);
   };
 
   const removeTheme = (index) => {
     const updatedThemes = eventOptions.theme.filter((_, i) => i !== index);
-    setEventOptions((prevOptions) => ({
-      ...prevOptions,
-      theme: updatedThemes,
-    }));
+    setEventOptions((prevOptions) => ({ ...prevOptions, theme: updatedThemes }));
+    const eventID = localStorage.getItem("eventID");
+    updateEventInFirestore(eventID, { theme: updatedThemes });
   };
 
   return (
     <div className="container">
-      {/* Progress bar section */}
       <div className="progress-container">
         <div className="progress-bar" style={{ width: '40%' }} />
         <div className="progress-percentage">40%</div>
@@ -115,23 +124,15 @@ function Theme() {
             ) : (
               <>
                 {name}
-                <button className="edit-button" onClick={() => handleEditClick(index)}>
-                  Edit
-                </button>
-                <button className="remove-button" onClick={() => removeTheme(index)}>
-                  ✕
-                </button>
+                <button className="edit-button" onClick={() => handleEditClick(index)}>Edit</button>
+                <button className="remove-button" onClick={() => removeTheme(index)}>✕</button>
               </>
             )}
           </div>
         ))}
       </div>
 
-      {showWarning && (
-        <div className="alert-popup">
-          Please enter a theme before continuing.
-        </div>
-      )}
+      {showWarning && <div className="alert-popup">Please enter a theme before continuing.</div>}
 
       <div className="next-button-row">
         {eventOptions.theme?.length > 0 ? (

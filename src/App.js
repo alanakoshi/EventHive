@@ -1,7 +1,7 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import AuthPage from "./components/auth/AuthPage";  // New AuthPage for login/signup
+import { HashRouter as Router, Routes, Route } from "react-router-dom"; // 👈 use HashRouter
+import AuthPage from "./components/auth/AuthPage";
 import Home from "./Home";
 import Plan from "./Plan";
 import Events from "./Events";
@@ -21,11 +21,9 @@ function App() {
   return (
     <EventProvider>
       <CohostProvider>
-        <Router basename="/EventHive">
+        <Router>
           <Routes>
-            {/* Default route to auth page */}
             <Route path="/" element={<AuthPage />} />
-            {/* Other Routes */}
             <Route path="/home" element={<Home />} />
             <Route path="/plan" element={<Plan />} />
             <Route path="/events" element={<Events />} />

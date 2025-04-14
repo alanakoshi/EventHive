@@ -146,3 +146,14 @@ export const fetchUserNameByEmail = async (email) => {
   }
   return email;
 };
+
+// Fetch a specific event's data by eventID
+export const fetchEventByID = async (eventID) => {
+  const eventDocRef = doc(db, 'events', eventID);
+  const eventSnap = await getDoc(eventDocRef);
+
+  if (eventSnap.exists()) {
+    return { id: eventSnap.id, ...eventSnap.data() };
+  }
+  return null;
+};

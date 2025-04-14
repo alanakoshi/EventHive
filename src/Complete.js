@@ -8,7 +8,6 @@ function Complete() {
 
   const theme = eventOptions.theme[0] || 'N/A';
   const venue = eventOptions.venue[0] || 'N/A';
-  const budget = eventOptions.budget[0] || '0.00';
   const date = eventOptions.dates[0] || 'N/A';
 
   return (
@@ -20,7 +19,7 @@ function Complete() {
       </div>
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
         {/* Back button aligned left */}
-        <Link to="/date" className="btn back-btn rounded-circle shadow-sm back-icon">
+        <Link to="/tasks" className="btn back-btn rounded-circle shadow-sm back-icon">
           <i
             className="bi bi-arrow-left-short"
           ></i>
@@ -33,7 +32,6 @@ function Complete() {
           <p><strong>Date:</strong> {date}</p>
           <p><strong>Theme:</strong> {theme}</p>
           <p><strong>Venue:</strong> {venue}</p>
-          <p><strong>Budget:</strong> {budget}</p>
           <p><strong>Tasks:</strong> Finished</p>
         </div>
         <div className="next-button-row">

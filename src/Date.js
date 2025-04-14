@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Date.css';
 import './App.css';
+import { updateEventInFirestore } from './firebaseHelpers';
 
 function Date() {
   // Access selected dates from the EventContext.
@@ -22,6 +23,11 @@ function Date() {
   // Maintain local state for the current month and year using the global Date via window.Date.
   const [currentMonth, setCurrentMonth] = useState(new window.Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new window.Date().getFullYear());
+
+  const handleNext = async () => {
+    const eventID = localStorage.getItem("eventID");
+    await updateEventInFirestore(eventID, { dates: selectedDates });
+  };
 
   // Toggle date selection.
   const toggleDate = (day) => {
@@ -173,7 +179,7 @@ function Date() {
       {/* Next button*/}
       <div className="next-button-row">
         {selectedDates.length > 0 ? (
-          <Link to="/theme" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/theme" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>
         ) : (

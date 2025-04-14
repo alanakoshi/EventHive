@@ -4,59 +4,58 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { EventContext } from './EventContext';
 import './Voting.css';
 import './App.css';
+import { addVoteToFirestore } from './firebaseHelpers';
+import { auth } from './firebase';
 
 function Voting() {
-  const { eventOptions, setVotes } = useContext(EventContext);
+    const { eventOptions, votes, setVotes } = useContext(EventContext);
+    const [selected, setSelected] = useState({ theme: '', venue: '', budget: '', date: '' });
+    // New state to track which option each user has voted for in each category
+    const [userVotes, setUserVotes] = useState({});
+    const eventID = localStorage.getItem("eventID");
 
-  const [rankings, setRankings] = useState(() => {
-    const initial = {};
-    const initialVotes = {};
-  
-    for (const category in eventOptions) {
-      const options = [...eventOptions[category]];
-      initial[category] = options;
-  
-      // Pre-fill default scores (top-down)
-      const scored = {};
-      options.forEach((opt, idx) => {
-        scored[opt] = options.length - idx;
+    const handleVote = async (category, option) => {
+        // Prevent voting twice for the same option in this category
+        if (userVotes[category] === option) {
+            return;
+        }
+        
+        // Update votes in Firestore
+        await addVoteToFirestore(eventID, auth.currentUser.uid, category, option);
+        
+        // Update local state (EventContext)
+        setVotes((prevVotes) => {
+            const currentVotes = { ...(prevVotes[category] || {}) };
+        
+            if (userVotes[category]) {
+            currentVotes[userVotes[category]] = Math.max((currentVotes[userVotes[category]] || 0) - 1, 0);
+            }
+        
+            currentVotes[option] = (currentVotes[option] || 0) + 1;
+        
+            return {
+            ...prevVotes,
+            [category]: currentVotes
+            };
       });
-      initialVotes[category] = scored;
-    }
-  
-    setVotes(initialVotes); // ✅ Pre-fill scores for all categories
-  
-    return initial;
-  });
+    
+      // Update which option the user voted for in local state
+      setUserVotes((prev) => ({ ...prev, [category]: option }));
+      setSelected((prev) => ({ ...prev, [category]: option }));
+    };
 
-  const handleDragEnd = (result) => {
-    if (!result.destination) return;
-    if (result.source.droppableId !== result.destination.droppableId) return; // 🚫 block cross-category drops
+    // Update calculatePercentage so that once an option is selected in a category,
+    // the selected option shows 100% and all other options show 0%
+    const calculatePercentage = (category, option) => {
+        if (selected[category]) {
+            return selected[category] === option ? '100' : '0';
+        }
+        return '0';
+    };
 
-    const category = result.source.droppableId;
-    const items = Array.from(rankings[category]);
-    const [movedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, movedItem);
-
-    setRankings((prev) => ({
-        ...prev,
-        [category]: items,
-    }));
-
-    const scoredVotes = {};
-    items.forEach((item, index) => {
-        scoredVotes[item] = items.length - index;
-    });
-
-    setVotes((prev) => ({
-        ...prev,
-        [category]: scoredVotes,
-    }));
-  };
-
-  const allCategoriesRanked = Object.keys(eventOptions).every(
-    (category) => rankings[category] && rankings[category].length > 0
-  );
+    const allCategoriesVoted = Object.keys(eventOptions).every(
+        (category) => userVotes[category]
+    );
 
   return (
     <div className="container">
@@ -65,7 +64,7 @@ function Voting() {
         <div className="progress-percentage">70%</div>
       </div>
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
-        <Link to="/budget" className="btn back-btn rounded-circle shadow-sm back-icon">
+        <Link to="/venue" className="btn back-btn rounded-circle shadow-sm back-icon">
           <i className="bi bi-arrow-left-short"></i>
         </Link>
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Voting</h1>

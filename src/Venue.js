@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Venue.css';
 import './App.css';
+import { updateEventInFirestore } from './firebaseHelpers';
 
 function Venue() {
   const [venueName, setVenueName] = useState("");
@@ -13,47 +14,28 @@ function Venue() {
   const inputRef = useRef(null);
   const editRef = useRef(null);
 
-  const handleInputChange = (e) => setVenueName(e.target.value);
-  const handleEditChange = (e) => setEditingValue(e.target.value);
-
-  const tryAddVenue = () => {
-    const trimmed = venueName.trim();
-    if (trimmed === "") return;
-    setEventOptions((prev) => ({
-      ...prev,
-      venue: [...(prev.venue || []), trimmed],
-    }));
-    setVenueName("");
-    setShowWarning(false);
+  const handleInputChange = (e) => {
+    setVenueName(e.target.value);
   };
 
-  const trySaveEdit = () => {
-    const trimmed = editingValue.trim();
-    if (trimmed === "") {
-      setShowWarning(true);
-      setTimeout(() => setShowWarning(false), 2000);
-    } else {
-      const updatedVenues = [...eventOptions.venue];
-      updatedVenues[editingIndex] = trimmed;
-      setEventOptions((prev) => ({
-        ...prev,
-        venue: updatedVenues,
-      }));
-      setEditingIndex(null);
-      setEditingValue("");
-    }
+  const handleNext = async () => {
+    const eventID = localStorage.getItem("eventID");
+    await updateEventInFirestore(eventID, { theme: eventOptions.theme });
   };
-
+  
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') tryAddVenue();
-  };
-
-  const handleEditClick = (index) => {
-    setEditingIndex(index);
-    setEditingValue(eventOptions.venue[index]);
-    setTimeout(() => {
-      editRef.current?.focus();
-    }, 0);
+    if (e.key === 'Enter') {
+      if (venueName.trim() === "") {
+        setShowWarning(true);
+        setTimeout(() => setShowWarning(false), 2000);
+      } else {
+        setEventOptions((prevOptions) => ({
+          ...prevOptions,
+          venue: [...(prevOptions.venue || []), venueName]
+        }));
+        setVenueName("");
+      }
+    }
   };
 
   const removeVenue = (index) => {
@@ -129,7 +111,7 @@ function Venue() {
 
       <div className="next-button-row">
         {eventOptions.venue?.length > 0 ? (
-          <Link to="/budget" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/voting" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>
         ) : (

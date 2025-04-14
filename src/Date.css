@@ -90,6 +90,9 @@
     color: #333;
     border-radius: 50%;
     transition: background-color 0.2s;
+    background-color: transparent; /* ✅ Reset background */
+    border: none;                   /* ✅ Reset border */
+    transition: background-color 0.2s;
   }
   .day-cells .calendar-day:hover {
     background-color: #ffe680;
@@ -115,5 +118,22 @@
     margin: 0 0 5px 0;
     font-size: 16px;
     color: #666;
+  }
+
+  .calendar-day.today {
+    border: 2px solid #aaa; /* subtle outline for today */
+    background-color: transparent; /* ✅ prevent fill */
+    color: #000;
+    font-weight: bold;
+
+  }
+
+  .calendar-day:not(.selected):not(.today):hover {
+    background-color: transparent; /* ✅ Prevent faint hover after deselect */
+    color: #333;
+  }
+  
+  .calendar-day.today:not(.selected):hover {
+    background-color: transparent;
   }
   

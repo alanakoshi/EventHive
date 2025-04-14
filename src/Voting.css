@@ -1,17 +1,27 @@
 /* Category Section */
 .category-section {
     margin-bottom: 20px;
-}
+    overflow: hidden; /* ✅ prevents dragging beyond category box */
+    padding: 10px;
+    background: #fefefe;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+  }
 
 /* Options List */
 .options-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
-}
+    max-height: 300px;
+    overflow-y: auto; /* scrolls internally if needed */
+    padding: 5px;
+  }
 
 /* Individual Option Item */
 .option-item {
+    width: 100%;
+    max-width: 100%; /* prevents dragging out of bounds visually */
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -22,31 +32,21 @@
     justify-content: space-between;
 }
 
+.option-item:active {
+    background-color: #f0f8ff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+    transition: all 0.15s ease-in-out;
+  }
+
 /* Style for the option text */
 .option-text {
     font-size: 14px;
     flex-grow: 1;
 }
 
-/* Percentage badge */
-.option-percentage {
-    font-size: 12px;
-    color: #555;
-    margin-left: 5px;
-}
-
-/* Checkmark for selected option */
-.checkmark {
-    position: absolute;
-    right: 10px;
-    font-size: 18px;
-    font-weight: bold;
-    color: green;
-}
-
-/* Highlight selected option */
-.option-item.selected {
-    background-color: #e0e0e0;
+.option-item:hover {
+    background-color: #f9f9f9;
 }
 
 /* Submit Votes button styling */
@@ -67,3 +67,42 @@
     justify-content: center;
     margin-top: 20px;
 }
+
+.option-rank {
+    font-weight: bold;
+    margin-right: 10px;
+    color: #666;
+  }
+
+  .ranked-list {
+    padding-left: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .ranked-list li {
+    margin: 6px 0;
+    font-size: 16px;
+  }
+  
+  .ranked-list .top-pick {
+    font-weight: bold;
+    color: #ff9800;
+  }
+  
+  .score-tag {
+    font-size: 12px;
+    color: #777;
+    margin-left: 8px;
+  }
+
+  .editable-task {
+    cursor: text;
+    margin-left: 8px;
+    margin-right: 8px;
+  }
+  input[type="text"] {
+    padding: 4px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  

@@ -113,11 +113,22 @@ function Tasks() {
 function TaskInput({ onAdd }) {
   const [taskText, setTaskText] = useState("");
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      onAdd(taskText);
+  const tryAdd = () => {
+    const trimmed = taskText.trim();
+    if (trimmed !== "") {
+      onAdd(trimmed);
       setTaskText("");
     }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      tryAdd();
+    }
+  };
+
+  const handleBlur = () => {
+    tryAdd();
   };
 
   return (
@@ -126,32 +137,57 @@ function TaskInput({ onAdd }) {
       placeholder="Delegate a task"
       value={taskText}
       onChange={(e) => setTaskText(e.target.value)}
-      onKeyDown={handleKeyPress}
+      onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
       className="event-input"
     />
   );
 }
+
 
 // Component for editing task text
 function EditableTask({ text, onSave }) {
   const [isEditing, setEditing] = useState(false);
   const [tempText, setTempText] = useState(text);
 
-  const handleBlur = () => {
-    onSave(tempText);
-    setEditing(false);
+  useEffect(() => {
+    setTempText(text);
+  }, [text]);
+
+  const commitEdit = () => {
+    const trimmed = tempText.trim();
+    setTimeout(() => {
+      if (trimmed !== "") {
+        onSave(trimmed);
+      } else {
+        setTempText(text); // restore if blank
+      }
+      setEditing(false);
+    }, 0);
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      commitEdit();
+    } else if (e.key === "Escape") {
+      setTempText(text);
+      setEditing(false);
+    }
   };
 
   return isEditing ? (
     <input
       type="text"
       value={tempText}
-      onChange={e => setTempText(e.target.value)}
-      onBlur={handleBlur}
+      onChange={(e) => setTempText(e.target.value)}
+      onBlur={commitEdit}
+      onKeyDown={handleKeyDown}
       autoFocus
     />
   ) : (
-    <span onDoubleClick={() => setEditing(true)}>{text}</span>
+    <span onClick={() => setEditing(true)} className="editable-task">
+      {text}
+    </span>
   );
 }
 

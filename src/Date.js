@@ -17,6 +17,8 @@ function Date() {
     return `${year}-${month}-${day}`;
   };
 
+  const todayString = toLocalDateString(new window.Date());
+
   // Maintain local state for the current month and year using the global Date via window.Date.
   const [currentMonth, setCurrentMonth] = useState(new window.Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new window.Date().getFullYear());
@@ -136,17 +138,20 @@ function Date() {
       
       {/* Calendar Day Cells */}
       <div className="calendar-grid day-cells">
-        {calendarCells.map((day, idx) => {
+      {calendarCells.map((day, idx) => {
           if (day === null) {
             return <div key={idx} className="calendar-day blank"></div>;
           }
-          // Build the local date string for this day using local date values.
+
           const isoString = toLocalDateString(new window.Date(currentYear, currentMonth, day));
           const isSelected = selectedDates.includes(isoString);
+          const todayString = toLocalDateString(new window.Date());
+          const isToday = isoString === todayString;
+
           return (
             <div
               key={idx}
-              className={`calendar-day ${isSelected ? 'selected' : ''}`}
+              className={`calendar-day ${isSelected ? 'selected' : ''} ${isToday ? 'today' : ''}`}
               onClick={() => toggleDate(day)}
             >
               {day}

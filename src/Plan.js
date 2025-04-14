@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import './Plan.css';
 import './App.css';
 import { useEffect } from 'react';
+import { useRef } from 'react';
 
 function Plan() {
   const [eventName, setEventName] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const inputRef = useRef(null);
 
   const handleInputChange = (e) => {
     setEventName(e.target.value);
@@ -30,6 +32,21 @@ function Plan() {
   const handleEditClick = () => {
     setIsEditing(true);
     setIsSubmitted(false);
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 0); // slight delay ensures input is rendered
+  };
+  
+
+  const trySaveEventName = () => {
+    if (eventName.trim() === "") {
+      setShowWarning(true);
+      setTimeout(() => setShowWarning(false), 2000);
+    } else {
+      localStorage.setItem("eventName", eventName);
+      setIsSubmitted(true);
+      setIsEditing(false);
+    }
   };
 
   useEffect(() => {
@@ -72,8 +89,10 @@ function Plan() {
               placeholder="Enter event name" 
               value={eventName} 
               onChange={handleInputChange} 
-              onKeyDown={handleKeyPress}
+              onKeyDown={(e) => e.key === 'Enter' && trySaveEventName()}
+              onBlur={trySaveEventName}
               className="event-input"
+              ref={inputRef}
             />
           )}
         </div>

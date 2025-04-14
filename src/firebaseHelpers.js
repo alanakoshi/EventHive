@@ -1,48 +1,58 @@
+// firebaseHelpers.js
 import { db, serverTimestampFn } from './firebase';
-import { collection, addDoc, doc, updateDoc, getDocs, query, where } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  doc,
+  setDoc,
+  updateDoc,
+  getDocs,
+  query,
+  where
+} from 'firebase/firestore';
 
 export const addUserToFirestore = async (uid, name, email) => {
-try {
-  await addDoc(collection(db, "users"), {
-  uid: uid,
-  name: name,
-  email: email,
-  profilePic: "", // You can update this later
-  createdAt: serverTimestampFn(),
-  });
-  console.log("User added to Firestore");
-} catch (error) {
-  console.error("Error adding user to Firestore:", error);
-}
+  try {
+    await setDoc(doc(db, "users", uid), {
+      uid: uid,
+      name: name,
+      email: email,
+      profilePic: "",
+      createdAt: serverTimestampFn(),
+    });
+    console.log("User added to Firestore");
+  } catch (error) {
+    console.error("Error adding user to Firestore:", error);
+  }
 };
 
 export const addEventToFirestore = async (hostID, name, date, location) => {
   try {
-  const eventRef = await addDoc(collection(db, "events"), {
-    hostID: hostID,  // current user uid
-    name: name,
-    date: date,
-    location: location,
-    createdAt: serverTimestampFn(),
-  });
-  console.log("Event added to Firestore");
-  return eventRef.id; // <---- RETURN THE EVENT ID
+    const eventRef = await addDoc(collection(db, "events"), {
+      hostID: hostID,
+      name: name,
+      date: date,
+      location: location,
+      createdAt: serverTimestampFn(),
+    });
+    console.log("Event added to Firestore");
+    return eventRef.id;
   } catch (error) {
-  console.error("Error adding event:", error);
+    console.error("Error adding event:", error);
   }
 };
 
-export const addCohostToFirestore = async (eventID, userID, role = "cohost") => {
+export const addCohostToFirestore = async (eventID, email, role = "cohost") => {
   try {
-  await addDoc(collection(db, "cohosts"), {
-    eventID: eventID,
-    userID: userID,
-    role: role,
-    addedAt: serverTimestampFn(),
-  });
-  console.log("Cohost added to Firestore");
+    await addDoc(collection(db, "cohosts"), {
+      eventID: eventID,
+      email: email,
+      role: role,
+      addedAt: serverTimestampFn(),
+    });
+    console.log("Cohost invited via email.");
   } catch (error) {
-  console.error("Error adding cohost:", error);
+    console.error("Error adding cohost:", error);
   }
 };
 
@@ -51,7 +61,7 @@ export const addVoteToFirestore = async (eventID, userID, category, option) => {
     await addDoc(collection(db, "votes"), {
       eventID: eventID,
       userID: userID,
-      category: category,  // ex: "venue", "theme", "budget"
+      category: category,
       option: option,
       votedAt: serverTimestampFn(),
     });
@@ -75,7 +85,6 @@ export const getUserIDByName = async (name) => {
   return null;
 };
 
-// Get all events where the user is the host or cohost
 export const fetchUserEvents = async (uid) => {
   const eventsAsHost = query(collection(db, 'events'), where('hostID', '==', uid));
   const hostSnapshot = await getDocs(eventsAsHost);
@@ -94,7 +103,6 @@ export const fetchUserEvents = async (uid) => {
   return [...hostEvents, ...cohostEvents];
 };
 
-// Add Task to Firestore
 export const addTaskToFirestore = async (eventID, cohostName, text) => {
   try {
     await addDoc(collection(db, 'tasks'), {
@@ -110,9 +118,18 @@ export const addTaskToFirestore = async (eventID, cohostName, text) => {
   }
 };
 
-// Fetch Tasks for a specific event
 export const fetchTasksForEvent = async (eventID) => {
   const q = query(collection(db, 'tasks'), where('eventID', '==', eventID));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => doc.data());
+};
+
+export const fetchUserNameByEmail = async (email) => {
+  const q = query(collection(db, 'users'), where('email', '==', email));
+  const snapshot = await getDocs(q);
+
+  if (!snapshot.empty) {
+    return snapshot.docs[0].data().name || email;
+  }
+  return email;
 };

@@ -1,3 +1,4 @@
+// Venue.js
 import { useState, useContext, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
@@ -18,24 +19,46 @@ function Venue() {
     setVenueName(e.target.value);
   };
 
-  const handleNext = async () => {
+  const tryAddVenue = () => {
+    if (venueName.trim() === "") return;
+    const updatedVenues = [...(eventOptions.venue || []), venueName];
+    setEventOptions((prevOptions) => ({
+      ...prevOptions,
+      venue: updatedVenues,
+    }));
+    setVenueName("");
+
     const eventID = localStorage.getItem("eventID");
-    await updateEventInFirestore(eventID, { theme: eventOptions.theme });
+    updateEventInFirestore(eventID, { venue: updatedVenues });
   };
-  
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      if (venueName.trim() === "") {
-        setShowWarning(true);
-        setTimeout(() => setShowWarning(false), 2000);
-      } else {
-        setEventOptions((prevOptions) => ({
-          ...prevOptions,
-          venue: [...(prevOptions.venue || []), venueName]
-        }));
-        setVenueName("");
-      }
+
+  const handleNext = async () => {
+    if (venueName.trim() !== "") {
+      tryAddVenue();
     }
+    const eventID = localStorage.getItem("eventID");
+    await updateEventInFirestore(eventID, { venue: eventOptions.venue });
+  };
+
+  const handleEditClick = (index) => {
+    setEditingIndex(index);
+    setEditingValue(eventOptions.venue[index]);
+  };
+
+  const handleEditChange = (e) => {
+    setEditingValue(e.target.value);
+  };
+
+  const trySaveEdit = () => {
+    const updated = [...eventOptions.venue];
+    updated[editingIndex] = editingValue.trim();
+    setEventOptions((prev) => ({ ...prev, venue: updated }));
+
+    const eventID = localStorage.getItem("eventID");
+    updateEventInFirestore(eventID, { venue: updated });
+
+    setEditingIndex(null);
+    setEditingValue("");
   };
 
   const removeVenue = (index) => {
@@ -44,11 +67,13 @@ function Venue() {
       ...prev,
       venue: updatedVenues,
     }));
+
+    const eventID = localStorage.getItem("eventID");
+    updateEventInFirestore(eventID, { venue: updatedVenues });
   };
 
   return (
     <div className="container">
-      {/* Progress bar section */}
       <div className="progress-container">
         <div className="progress-bar" style={{ width: '50%' }} />
         <div className="progress-percentage">50%</div>
@@ -110,7 +135,7 @@ function Venue() {
       </div>
 
       <div className="next-button-row">
-        {eventOptions.venue?.length > 0 ? (
+        {eventOptions.venue?.length > 0 || venueName.trim() !== "" ? (
           <Link to="/voting" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>

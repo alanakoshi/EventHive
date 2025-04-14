@@ -16,41 +16,37 @@ function InviteCohost() {
     setCohostEmail(e.target.value);
   };
 
+  const handleAddCohost = async () => {
+    if (cohostEmail.trim() === "") {
+      setShowWarning(true);
+      setTimeout(() => setShowWarning(false), 2000);
+      return;
+    }
+
+    const eventID = localStorage.getItem("eventID");
+    await addCohostToFirestore(eventID, cohostEmail);
+    
+    setCohosts([...cohosts, cohostEmail]);
+    setCohostEmail("");
+    setSuccessMessage("Cohost added!");
+
+    setTimeout(() => setSuccessMessage(""), 2000);
+  };
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      if (cohostEmail.trim() === "") {
-        setShowWarning(true);
-        setTimeout(() => setShowWarning(false), 2000);
-      } else {
-        setCohosts([...cohosts, cohostEmail]);
-        setCohostEmail("");
-      }
+      handleAddCohost();
     }
   };
 
   const handleNext = async () => {
     const eventID = localStorage.getItem("eventID");
-    console.log("Saving Cohosts for Event:", eventID);
-    console.log("Current User:", auth.currentUser?.uid);
-    console.log("Cohost Emails:", cohosts);
-
     await updateEventInFirestore(eventID, { cohosts });
-
-    for (const email of cohosts) {
-      console.log("Adding Cohost:", email);
-      await addCohostToFirestore(eventID, email);
-    }
-
-    setSuccessMessage("Cohosts saved successfully!");
-
-    setTimeout(() => {
-      setSuccessMessage("");
-    }, 2000); // Hide after 2 seconds
   };
 
   const removeCohost = (index) => {
-    const updatedCohosts = cohosts.filter((_, i) => i !== index);
-    setCohosts(updatedCohosts);
+    const updated = cohosts.filter((_, i) => i !== index);
+    setCohosts(updated);
   };
 
   return (
@@ -77,6 +73,7 @@ function InviteCohost() {
             onKeyDown={handleKeyPress}
             className="event-input"
           />
+          <button onClick={handleAddCohost} className="add-button">Add</button>
         </div>
       </div>
 
@@ -84,34 +81,21 @@ function InviteCohost() {
         {cohosts.map((email, index) => (
           <div key={index} className="cohost-name-box">
             {email}
-            <button className="remove-button" onClick={() => removeCohost(index)}>
-              ✕
-            </button>
+            <button className="remove-button" onClick={() => removeCohost(index)}>✕</button>
           </div>
         ))}
       </div>
 
-      {showWarning && (
-        <div className="alert-popup">
-          Please enter a cohost email before continuing.
-        </div>
-      )}
-
-      {successMessage && (
-        <div className="success-popup">
-          {successMessage}
-        </div>
-      )}
+      {showWarning && <div className="alert-popup">Please enter a cohost email before continuing.</div>}
+      {successMessage && <div className="success-popup">{successMessage}</div>}
 
       <div className="next-button-row">
         {cohosts.length > 0 ? (
-          <Link to="/date" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/date" onClick={handleNext} className="next-button active">
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
-            Next
-          </button>
+          <button className="next-button disabled" disabled>Next</button>
         )}
       </div>
     </div>

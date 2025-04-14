@@ -10,15 +10,14 @@ function Home() {
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchEvents = async () => {
       const user = auth.currentUser;
-      if (!user) return;
-
-      const eventsData = await fetchUserEvents(user.uid);
-      setEvents(eventsData);
+      if (user) {
+        const userEvents = await fetchUserEvents(user.uid, user.email);
+        setEvents(userEvents);
+      }
     };
-
-    fetchData();
+    fetchEvents();
   }, []);
 
   return (

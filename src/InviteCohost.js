@@ -1,63 +1,51 @@
-import { useState, useContext, useRef } from 'react';
+import { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CohostContext } from './CohostContext';
 import './InviteCohost.css';
 import './App.css';
-import { updateEventInFirestore } from './firebaseHelpers';
+import { addCohostToFirestore, updateEventInFirestore } from './firebaseHelpers';
+import { auth } from './firebase';
 
 function InviteCohost() {
   const { cohosts, setCohosts } = useContext(CohostContext);
-  const [cohostName, setCohostName] = useState("");
+  const [cohostEmail, setCohostEmail] = useState("");
   const [showWarning, setShowWarning] = useState(false);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editingValue, setEditingValue] = useState("");
-  const inputRef = useRef(null);
-  const editRef = useRef(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleInputChange = (e) => setCohostName(e.target.value);
+  const handleInputChange = (e) => {
+    setCohostEmail(e.target.value);
+  };
 
-  const tryAddCohost = () => {
-    const trimmed = cohostName.trim();
-    if (trimmed === "") {
-      // only show warning if the input is empty and there's no edit in progress
-      return;
-    } else {
-      setCohosts([...cohosts, trimmed]);
-      setCohostName("");
-      setShowWarning(false); // hide warning if it was previously shown
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      if (cohostEmail.trim() === "") {
+        setShowWarning(true);
+        setTimeout(() => setShowWarning(false), 2000);
+      } else {
+        setCohosts([...cohosts, cohostEmail]);
+        setCohostEmail("");
+      }
     }
   };
 
   const handleNext = async () => {
     const eventID = localStorage.getItem("eventID");
+    console.log("Saving Cohosts for Event:", eventID);
+    console.log("Current User:", auth.currentUser?.uid);
+    console.log("Cohost Emails:", cohosts);
+
     await updateEventInFirestore(eventID, { cohosts });
-  };
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') tryAddCohost();
-  };
-
-  const handleEditClick = (index) => {
-    setEditingIndex(index);
-    setEditingValue(cohosts[index]);
-    setTimeout(() => {
-      editRef.current?.focus();
-    }, 0);
-  };
-
-  const handleEditChange = (e) => setEditingValue(e.target.value);
-
-  const trySaveEdit = () => {
-    if (editingValue.trim() === "") {
-      setShowWarning(true);
-      setTimeout(() => setShowWarning(false), 2000);
-    } else {
-      const updated = [...cohosts];
-      updated[editingIndex] = editingValue.trim();
-      setCohosts(updated);
-      setEditingIndex(null);
-      setEditingValue("");
+    for (const email of cohosts) {
+      console.log("Adding Cohost:", email);
+      await addCohostToFirestore(eventID, email);
     }
+
+    setSuccessMessage("Cohosts saved successfully!");
+
+    setTimeout(() => {
+      setSuccessMessage("");
+    }, 2000); // Hide after 2 seconds
   };
 
   const removeCohost = (index) => {
@@ -67,7 +55,6 @@ function InviteCohost() {
 
   return (
     <div className="container">
-      {/* Progress bar section */}
       <div className="progress-container">
         <div className="progress-bar" style={{ width: '20%' }} />
         <div className="progress-percentage">20%</div>
@@ -82,56 +69,37 @@ function InviteCohost() {
 
       <div className='color-block'>
         <div className='event-block'>
-          <input 
-            type="text" 
-            placeholder="Enter cohost name" 
-            value={cohostName} 
+          <input
+            type="email"
+            placeholder="Enter cohost email"
+            value={cohostEmail}
             onChange={handleInputChange}
             onKeyDown={handleKeyPress}
-            onBlur={tryAddCohost}
             className="event-input"
-            ref={inputRef}
           />
         </div>
       </div>
 
       <div className='cohost-list'>
-        {cohosts.map((name, index) => (
+        {cohosts.map((email, index) => (
           <div key={index} className="cohost-name-box">
-            {editingIndex === index ? (
-              <input
-                type="text"
-                value={editingValue}
-                onChange={handleEditChange}
-                onBlur={trySaveEdit}
-                onKeyDown={(e) => e.key === 'Enter' && trySaveEdit()}
-                ref={editRef}
-                className="event-input"
-              />
-            ) : (
-              <>
-                {name}
-                <button 
-                  className="edit-button" 
-                  onClick={() => handleEditClick(index)}
-                >
-                  Edit
-                </button>
-                <button 
-                  className="remove-button" 
-                  onClick={() => removeCohost(index)}
-                >
-                  ✕
-                </button>
-              </>
-            )}
+            {email}
+            <button className="remove-button" onClick={() => removeCohost(index)}>
+              ✕
+            </button>
           </div>
         ))}
       </div>
 
-      {showWarning && cohosts.length === 0 && (
+      {showWarning && (
         <div className="alert-popup">
-          Please enter a cohost name before continuing.
+          Please enter a cohost email before continuing.
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="success-popup">
+          {successMessage}
         </div>
       )}
 
@@ -141,7 +109,7 @@ function InviteCohost() {
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666' }}>
+          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
             Next
           </button>
         )}

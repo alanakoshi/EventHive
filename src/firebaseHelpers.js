@@ -1,19 +1,19 @@
 import { db, serverTimestampFn } from './firebase';
-import { collection, addDoc, doc, updateDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, doc, setDoc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 
 export const addUserToFirestore = async (uid, name, email) => {
-try {
-  await addDoc(collection(db, "users"), {
-  uid: uid,
-  name: name,
-  email: email,
-  profilePic: "", // You can update this later
-  createdAt: serverTimestampFn(),
-  });
-  console.log("User added to Firestore");
-} catch (error) {
-  console.error("Error adding user to Firestore:", error);
-}
+  try {
+    await setDoc(doc(db, "users", uid), {
+      uid: uid,
+      name: name,
+      email: email,
+      profilePic: "",
+      createdAt: serverTimestampFn(),
+    });
+    console.log("User added to Firestore");
+  } catch (error) {
+    console.error("Error adding user to Firestore:", error);
+  }
 };
 
 export const addEventToFirestore = async (hostID, name, date, location) => {

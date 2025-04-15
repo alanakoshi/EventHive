@@ -60,7 +60,7 @@ function Plan() {
   return (
     <div className="container">
       <div className="progress-container">
-        <div className="progress-bar" style={{ width: '10%', backgroundColor: '#ffc107'}} />
+        <div className="progress-bar" style={{ width: '10%' }} />
         <div className="progress-percentage">10%</div>
       </div>
 
@@ -73,21 +73,34 @@ function Plan() {
 
       <div className="color-block">
         <div className='event-block'>
-          {isSubmitted ? (
-            <div className="event-name-box">
-              {eventName}
-              <button onClick={handleEditClick} className="edit-button">Edit</button>
-            </div>
-          ) : (
-            <input
-              type="text"
-              placeholder="Enter event name"
-              value={eventName}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyPress}
-              className="event-input"
-            />
-          )}
+        {isSubmitted ? (
+          <div className="event-name-box">
+            {eventName}
+            <button onClick={handleEditClick} className="edit-button">Edit</button>
+          </div>
+        ) : (
+          <input
+            type="text"
+            placeholder="Enter event name"
+            value={eventName}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyPress}
+            onBlur={async () => {
+              if (eventName.trim() === "") {
+                setShowWarning(true);
+                setTimeout(() => setShowWarning(false), 2000);
+                return;
+              }
+
+              const eventID = await addEventToFirestore(auth.currentUser.uid, eventName, "", "");
+              localStorage.setItem("eventID", eventID);
+              setIsSubmitted(true);
+              setIsEditing(false);
+            }}
+            autoFocus
+            className="event-input"
+          />
+        )}
         </div>
       </div>
 

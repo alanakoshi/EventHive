@@ -76,6 +76,22 @@ function InviteCohost() {
     localStorage.setItem("cohosts", JSON.stringify(updated));
   };
 
+  const tryAddCohost = () => {
+    const trimmedName = cohostName.trim();
+    const trimmedEmail = cohostEmail.trim();
+  
+    if (trimmedName === "" || trimmedEmail === "") {
+      return;
+    }
+  
+    const newCohosts = [...cohosts, { name: trimmedName, email: trimmedEmail }];
+    setCohosts(newCohosts);
+    localStorage.setItem("cohosts", JSON.stringify(newCohosts));
+  
+    setCohostName("");
+    setCohostEmail("");
+  };  
+
   return (
     <div className="container">
       <div className="progress-container">
@@ -98,6 +114,8 @@ function InviteCohost() {
               placeholder="Cohost Name"
               value={cohostName}
               onChange={(e) => setCohostName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && tryAddCohost()}
+              onBlur={tryAddCohost}
               className="event-input"
             />
             <input
@@ -105,12 +123,14 @@ function InviteCohost() {
               placeholder="Cohost Email"
               value={cohostEmail}
               onChange={(e) => setCohostEmail(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && tryAddCohost()}
+              onBlur={tryAddCohost}
               className="event-input"
-              onKeyDown={(e) => e.key === 'Enter' && handleAddCohost()}
             />
           </div>
         </div>
       )}
+
 
       <div className='cohost-list'>
         {cohosts.map((cohost, index) => (

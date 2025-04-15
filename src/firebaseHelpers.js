@@ -48,23 +48,29 @@ export const addEventToFirestore = async (hostID, name, date, location) => {
 // Add Cohost
 export const addCohostToFirestore = async (eventID, name, email, role = 'cohost') => {
   try {
-    let userID = null;
-    const userQuery = query(collection(db, 'users'), where('email', '==', email));
-    const snapshot = await getDocs(userQuery);
+    const cohostQuery = query(
+      collection(db, 'cohosts'),
+      where('eventID', '==', eventID),
+      where('email', '==', email)
+    );
 
-    if (!snapshot.empty) {
-      userID = snapshot.docs[0].data().uid;
-      name = snapshot.docs[0].data().name;
+    const existingCohosts = await getDocs(cohostQuery);
+
+    // If already exists, don't add again
+    if (!existingCohosts.empty) {
+      console.log('Cohost already exists, skipping Firestore add.');
+      return;
     }
 
     await addDoc(collection(db, 'cohosts'), {
       eventID,
       email,
       name,
-      userID,
       role,
       addedAt: serverTimestampFn(),
     });
+
+    console.log('Cohost successfully added!');
   } catch (error) {
     console.error('Error adding cohost:', error);
   }

@@ -15,22 +15,32 @@ function SignUp() {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
+
+    if (!name.trim()) {
+      setError('Please enter your name.');
+      return;
+    }
+
     try {
+      // Create user in Firebase Auth
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+      // Add display name to Auth profile
       await updateProfile(userCredential.user, { displayName: name });
-  
-      // Add user to Firestore
+
+      // Add user to Firestore 'users' collection
       await addUserToFirestore(userCredential.user.uid, name, email);
-  
+
       console.log('User registered:', userCredential.user);
+
       navigate('/home');
     } catch (error) {
-      if (error.code === "auth/email-already-in-use") {
-        setError("Email already in use.");
+      if (error.code === 'auth/email-already-in-use') {
+        setError('Email already in use.');
       } else {
         setError(error.message);
       }
-      console.error("Signup error:", error);
+      console.error('Signup error:', error);
     }
   };
 

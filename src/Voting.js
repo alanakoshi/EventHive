@@ -4,8 +4,6 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { EventContext } from './EventContext';
 import './Voting.css';
 import './App.css';
-import { addVoteToFirestore } from './firebaseHelpers';
-import { auth } from './firebase';
 
 function Voting() {
   const { eventOptions, setVotes } = useContext(EventContext);
@@ -99,7 +97,7 @@ function Voting() {
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                 >
-                  {rankings[category].map((option, index) => (
+                  {eventOptions[category].map((option, index) => (
                     <Draggable key={option} draggableId={option} index={index}>
                       {(provided) => (
                         <div
@@ -132,11 +130,19 @@ function Voting() {
       {/* Next Button */}
       <div className="next-button-row">
         {allCategoriesRanked ? (
-          <Link to="/final-result" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link
+            to="/final-result"
+            className="next-button active"
+            style={{ backgroundColor: '#ffcf34', color: '#000' }}
+          >
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+          <button
+            className="next-button disabled"
+            disabled
+            style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}
+          >
             Next
           </button>
         )}

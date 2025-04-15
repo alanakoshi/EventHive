@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom"; // import useNavigate
-import { auth } from '../../firebase'; // adjust the import path as needed
+import { auth, db } from '../../firebase'; // adjust the import path as needed
+import { addUserToFirestore } from '../../firebaseHelpers';
+import { getDoc, doc } from 'firebase/firestore';
 import './Login.css';
 
 function Login() {
@@ -16,9 +18,19 @@ function Login() {
     e.preventDefault();
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      console.log('Logged in user:', userCredential.user);
-      // Redirect user to the home page after successful login
-      navigate('/home'); // adjust the route if needed
+  
+      const user = userCredential.user;
+  
+      // Check if user exists in Firestore
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+  
+      if (!userDoc.exists()) {
+        // Add to Firestore if missing
+        await addUserToFirestore(user.uid, user.displayName || "", user.email);
+      }
+  
+      navigate('/home');
     } catch (error) {
       setError(error.message);
       console.error("Login error:", error);

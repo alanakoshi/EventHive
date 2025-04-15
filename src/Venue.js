@@ -1,9 +1,10 @@
-import { useState, useContext, useRef } from 'react';
+// Venue.js
+import { useState, useContext, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Venue.css';
 import './App.css';
-import { updateEventInFirestore } from './firebaseHelpers';
+import { updateEventInFirestore, fetchEventByID } from './firebaseHelpers';
 
 function Venue() {
   const [venueName, setVenueName] = useState("");
@@ -14,36 +15,69 @@ function Venue() {
   const inputRef = useRef(null);
   const editRef = useRef(null);
 
+  useEffect(() => {
+    const loadSavedVenues = async () => {
+      const eventID = localStorage.getItem("eventID");
+      if (eventID) {
+        const event = await fetchEventByID(eventID);
+        if (event?.venue) {
+          setEventOptions((prev) => ({ ...prev, venue: event.venue }));
+        }
+      }
+    };
+    loadSavedVenues();
+  }, [setEventOptions]);
+
   const handleInputChange = (e) => {
     setVenueName(e.target.value);
   };
 
   const handleNext = async () => {
     const eventID = localStorage.getItem("eventID");
-    await updateEventInFirestore(eventID, { theme: eventOptions.theme });
+    await updateEventInFirestore(eventID, { venue: eventOptions.venue });
   };
-  
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      if (venueName.trim() === "") {
-        setShowWarning(true);
-        setTimeout(() => setShowWarning(false), 2000);
-      } else {
-        setEventOptions((prevOptions) => ({
-          ...prevOptions,
-          venue: [...(prevOptions.venue || []), venueName]
-        }));
-        setVenueName("");
-      }
+
+  const tryAddVenue = () => {
+    if (venueName.trim() === "") {
+      setShowWarning(true);
+      setTimeout(() => setShowWarning(false), 2000);
+    } else {
+      const updatedVenues = [...(eventOptions.venue || []), venueName];
+      setEventOptions((prevOptions) => ({ ...prevOptions, venue: updatedVenues }));
+      setVenueName("");
+
+      const eventID = localStorage.getItem("eventID");
+      updateEventInFirestore(eventID, { venue: updatedVenues });
     }
+  };
+
+  const handleEditClick = (index) => {
+    setEditingIndex(index);
+    setEditingValue(eventOptions.venue[index]);
+  };
+
+  const handleEditChange = (e) => {
+    setEditingValue(e.target.value);
+  };
+
+  const trySaveEdit = () => {
+    const updated = [...eventOptions.venue];
+    updated[editingIndex] = editingValue.trim();
+    setEventOptions((prev) => ({ ...prev, venue: updated }));
+
+    const eventID = localStorage.getItem("eventID");
+    updateEventInFirestore(eventID, { venue: updated });
+
+    setEditingIndex(null);
+    setEditingValue("");
   };
 
   const removeVenue = (index) => {
     const updatedVenues = eventOptions.venue.filter((_, i) => i !== index);
-    setEventOptions((prev) => ({
-      ...prev,
-      venue: updatedVenues,
-    }));
+    setEventOptions((prev) => ({ ...prev, venue: updatedVenues }));
+
+    const eventID = localStorage.getItem("eventID");
+    updateEventInFirestore(eventID, { venue: updatedVenues });
   };
 
   const tryAddVenue = () => {
@@ -82,7 +116,6 @@ function Venue() {
 
   return (
     <div className="container">
-      {/* Progress bar section */}
       <div className="progress-container">
         <div className="progress-bar" style={{ width: '50%' }} />
         <div className="progress-percentage">50%</div>

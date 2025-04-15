@@ -1,18 +1,30 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { addEventToFirestore, fetchEventByID } from './firebaseHelpers';
+import { auth } from './firebase';
 import './Plan.css';
 import './App.css';
-import { addEventToFirestore } from './firebaseHelpers';
-import { auth } from './firebase';
-import { useRef } from 'react';
 
 function Plan() {
   const [eventName, setEventName] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
-  const inputRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadEvent = async () => {
+      const eventID = localStorage.getItem("eventID");
+      if (eventID) {
+        const event = await fetchEventByID(eventID);
+        if (event?.name) {
+          setEventName(event.name);
+          setIsSubmitted(true);
+        }
+      }
+    };
+    loadEvent();
+  }, []);
 
   const handleInputChange = (e) => {
     setEventName(e.target.value);
@@ -35,40 +47,15 @@ function Plan() {
   const handleEditClick = () => {
     setIsEditing(true);
     setIsSubmitted(false);
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 0); // slight delay ensures input is rendered
-  };
-  
-
-  const trySaveEventName = () => {
-    if (eventName.trim() === "") {
-      setShowWarning(true);
-      setTimeout(() => setShowWarning(false), 2000);
-    } else {
-      localStorage.setItem("eventName", eventName);
-      setIsSubmitted(true);
-      setIsEditing(false);
-    }
   };
 
   const handleNext = async () => {
     const eventID = localStorage.getItem("eventID");
-
     if (!eventID && eventName.trim() !== "") {
       const newEventID = await addEventToFirestore(auth.currentUser.uid, eventName, "", "");
       localStorage.setItem("eventID", newEventID);
     }
   };
-
-  useEffect(() => {
-    const stored = localStorage.getItem("eventName");
-    if (stored) {
-      setEventName(stored);
-      setIsSubmitted(true);
-      localStorage.removeItem("eventName");
-    }
-  }, []);
 
   return (
     <div className="container">
@@ -85,22 +72,20 @@ function Plan() {
       </div>
 
       <div className="color-block">
-        <div className="event-block">
+        <div className='event-block'>
           {isSubmitted ? (
             <div className="event-name-box">
               {eventName}
               <button onClick={handleEditClick} className="edit-button">Edit</button>
             </div>
           ) : (
-            <input 
-              type="text" 
-              placeholder="Enter event name" 
-              value={eventName} 
-              onChange={handleInputChange} 
-              onKeyDown={(e) => e.key === 'Enter' && trySaveEventName()}
-              onBlur={trySaveEventName}
+            <input
+              type="text"
+              placeholder="Enter event name"
+              value={eventName}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
               className="event-input"
-              ref={inputRef}
             />
           )}
         </div>

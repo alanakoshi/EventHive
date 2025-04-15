@@ -65,7 +65,7 @@ function Plan() {
       </div>
 
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
-        <Link to="/events" className="btn back-btn rounded-circle shadow-sm back-icon">
+        <Link to="/home" className="btn back-btn rounded-circle shadow-sm back-icon">
           <i className="bi bi-arrow-left-short"></i>
         </Link>
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Event Name</h1>

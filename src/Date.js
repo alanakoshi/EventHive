@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
 import './Date.css';
@@ -12,20 +12,26 @@ function SelectDate() {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
-  // Load saved dates from Firestore
   useEffect(() => {
-    const loadDatesFromFirestore = async () => {
+    const loadDates = async () => {
       const eventID = localStorage.getItem("eventID");
+      const continuePlanning = localStorage.getItem("continuePlanning") === "true";
+
       if (!eventID) return;
-      const data = await fetchEventByID(eventID);
-      if (data?.dates) {
-        setEventOptions(prev => ({
-          ...prev,
-          dates: data.dates
-        }));
+
+      if (continuePlanning) {
+        const data = await fetchEventByID(eventID);
+        if (data?.dates) {
+          setEventOptions(prev => ({ ...prev, dates: data.dates }));
+          localStorage.setItem("dates", JSON.stringify(data.dates));
+        }
+      } else {
+        const savedDates = JSON.parse(localStorage.getItem("dates")) || [];
+        setEventOptions(prev => ({ ...prev, dates: savedDates }));
       }
     };
-    loadDatesFromFirestore();
+
+    loadDates();
   }, [setEventOptions]);
 
   const toLocalDateString = (date) => {
@@ -40,17 +46,15 @@ function SelectDate() {
     const clickedDate = new Date(currentYear, currentMonth, day);
     const isoString = toLocalDateString(clickedDate);
 
+    let updatedDates;
     if (selectedDates.includes(isoString)) {
-      setEventOptions(prev => ({
-        ...prev,
-        dates: selectedDates.filter(d => d !== isoString)
-      }));
+      updatedDates = selectedDates.filter(d => d !== isoString);
     } else {
-      setEventOptions(prev => ({
-        ...prev,
-        dates: [...selectedDates, isoString]
-      }));
+      updatedDates = [...selectedDates, isoString];
     }
+
+    setEventOptions(prev => ({ ...prev, dates: updatedDates }));
+    localStorage.setItem("dates", JSON.stringify(updatedDates));
   };
 
   const handleNext = async () => {
@@ -84,12 +88,8 @@ function SelectDate() {
   const firstDayOfWeek = new Date(currentYear, currentMonth, 1).getDay();
 
   const calendarCells = [];
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    calendarCells.push(null);
-  }
-  for (let day = 1; day <= daysInMonth; day++) {
-    calendarCells.push(day);
-  }
+  for (let i = 0; i < firstDayOfWeek; i++) calendarCells.push(null);
+  for (let day = 1; day <= daysInMonth; day++) calendarCells.push(day);
 
   const dayNames = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
@@ -120,9 +120,7 @@ function SelectDate() {
           {[
             'January', 'February', 'March', 'April', 'May', 'June',
             'July', 'August', 'September', 'October', 'November', 'December'
-          ][currentMonth]}
-          {' '}
-          {currentYear}
+          ][currentMonth]} {currentYear}
         </div>
         <button className="calendar-arrow" onClick={handleNextMonth}>&gt;</button>
       </div>
@@ -135,9 +133,7 @@ function SelectDate() {
 
       <div className="calendar-grid day-cells">
         {calendarCells.map((day, idx) => {
-          if (day === null) {
-            return <div key={idx} className="calendar-day blank"></div>;
-          }
+          if (day === null) return <div key={idx} className="calendar-day blank"></div>;
 
           const isoString = toLocalDateString(new Date(currentYear, currentMonth, day));
           const isSelected = selectedDates.includes(isoString);

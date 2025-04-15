@@ -27,11 +27,6 @@ function Home() {
       </div>
 
       <div className="grid-buttons">
-        <Link to="/plan" className="button-tile">
-          <img src={`${process.env.PUBLIC_URL}/Clipboard.svg`} alt="Plan" className="button-icon" />
-          <span>Plan</span>
-        </Link>
-
         <Link to="/events" className="button-tile">
           <img src={`${process.env.PUBLIC_URL}/Calendar.svg`} alt="Events" className="button-icon" />
           <span>Events</span>

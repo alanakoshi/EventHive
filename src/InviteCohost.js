@@ -1,10 +1,14 @@
 import { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CohostContext } from './CohostContext';
+import { auth } from './firebase';
+import {
+  addCohostToFirestore,
+  updateEventInFirestore,
+  fetchEventByID
+} from './firebaseHelpers';
 import './InviteCohost.css';
 import './App.css';
-import { addCohostToFirestore, updateEventInFirestore, fetchEventByID } from './firebaseHelpers';
-import { auth } from './firebase';
 
 function InviteCohost() {
   const { cohosts, setCohosts } = useContext(CohostContext);
@@ -15,19 +19,27 @@ function InviteCohost() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    const loadEventData = async () => {
+    const loadCohosts = async () => {
       const eventID = localStorage.getItem("eventID");
-      if (eventID) {
+      const continuePlanning = localStorage.getItem("continuePlanning") === "true";
+
+      if (continuePlanning) {
         const event = await fetchEventByID(eventID);
         if (event?.cohosts) {
           setCohosts(event.cohosts);
+          localStorage.setItem("cohosts", JSON.stringify(event.cohosts));
         }
         if (event?.hostID === auth.currentUser?.uid) {
           setIsHost(true);
         }
+      } else {
+        const savedCohosts = JSON.parse(localStorage.getItem("cohosts")) || [];
+        setCohosts(savedCohosts);
+        setIsHost(true);
       }
     };
-    loadEventData();
+
+    loadCohosts();
   }, [setCohosts]);
 
   const handleAddCohost = () => {
@@ -36,13 +48,18 @@ function InviteCohost() {
       setTimeout(() => setShowWarning(false), 2000);
       return;
     }
-    setCohosts([...cohosts, { name: cohostName, email: cohostEmail }]);
+
+    const newCohosts = [...cohosts, { name: cohostName, email: cohostEmail }];
+    setCohosts(newCohosts);
+    localStorage.setItem("cohosts", JSON.stringify(newCohosts));
+
     setCohostName("");
     setCohostEmail("");
   };
 
   const handleNext = async () => {
     const eventID = localStorage.getItem("eventID");
+
     await updateEventInFirestore(eventID, { cohosts });
 
     for (const cohost of cohosts) {
@@ -54,8 +71,9 @@ function InviteCohost() {
   };
 
   const removeCohost = (index) => {
-    const updatedCohosts = cohosts.filter((_, i) => i !== index);
-    setCohosts(updatedCohosts);
+    const updated = cohosts.filter((_, i) => i !== index);
+    setCohosts(updated);
+    localStorage.setItem("cohosts", JSON.stringify(updated));
   };
 
   return (

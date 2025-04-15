@@ -1,4 +1,3 @@
-// Theme.js
 import { useState, useContext, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { EventContext } from './EventContext';
@@ -18,13 +17,21 @@ function Theme() {
   useEffect(() => {
     const loadSavedThemes = async () => {
       const eventID = localStorage.getItem("eventID");
-      if (eventID) {
+      const continuePlanning = localStorage.getItem("continuePlanning") === "true";
+
+      if (!eventID) return;
+
+      if (continuePlanning) {
         const event = await fetchEventByID(eventID);
-        if (event?.theme) {
-          setEventOptions((prev) => ({ ...prev, theme: event.theme }));
-        }
+        const loadedThemes = event?.theme || [];
+        setEventOptions(prev => ({ ...prev, theme: loadedThemes }));
+        localStorage.setItem("theme", JSON.stringify(loadedThemes));
+      } else {
+        const localThemes = JSON.parse(localStorage.getItem("theme")) || [];
+        setEventOptions(prev => ({ ...prev, theme: localThemes }));
       }
     };
+
     loadSavedThemes();
   }, [setEventOptions]);
 
@@ -40,10 +47,12 @@ function Theme() {
     const trimmed = themeName.trim();
     if (trimmed === "") return;
     const updatedThemes = [...(eventOptions.theme || []), trimmed];
-    setEventOptions((prevOptions) => ({ ...prevOptions, theme: updatedThemes }));
+    setEventOptions((prev) => ({ ...prev, theme: updatedThemes }));
     setThemeName("");
+
     const eventID = localStorage.getItem("eventID");
     updateEventInFirestore(eventID, { theme: updatedThemes });
+    localStorage.setItem("theme", JSON.stringify(updatedThemes));
   };
 
   const trySaveEdit = () => {
@@ -54,9 +63,12 @@ function Theme() {
     } else {
       const updatedThemes = [...eventOptions.theme];
       updatedThemes[editingIndex] = trimmed;
-      setEventOptions((prevOptions) => ({ ...prevOptions, theme: updatedThemes }));
+      setEventOptions((prev) => ({ ...prev, theme: updatedThemes }));
+
       const eventID = localStorage.getItem("eventID");
       updateEventInFirestore(eventID, { theme: updatedThemes });
+      localStorage.setItem("theme", JSON.stringify(updatedThemes));
+
       setEditingIndex(null);
       setEditingValue("");
     }
@@ -74,9 +86,11 @@ function Theme() {
 
   const removeTheme = (index) => {
     const updatedThemes = eventOptions.theme.filter((_, i) => i !== index);
-    setEventOptions((prevOptions) => ({ ...prevOptions, theme: updatedThemes }));
+    setEventOptions((prev) => ({ ...prev, theme: updatedThemes }));
+
     const eventID = localStorage.getItem("eventID");
     updateEventInFirestore(eventID, { theme: updatedThemes });
+    localStorage.setItem("theme", JSON.stringify(updatedThemes));
   };
 
   return (

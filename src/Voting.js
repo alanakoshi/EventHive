@@ -13,11 +13,12 @@ function Voting() {
   const userID = auth.currentUser?.uid;
 
   const [rankings, setRankings] = useState({});
-  
-  // Load previous votes if they exist
+
   useEffect(() => {
     const loadVotes = async () => {
       const eventData = await fetchEventByID(eventID);
+
+      // If user has already voted
       if (eventData?.votes && eventData.votes[userID]) {
         const userVotes = eventData.votes[userID];
         const loadedRankings = {};
@@ -32,11 +33,26 @@ function Voting() {
         setRankings(loadedRankings);
         setVotes(userVotes);
       } else {
+        // User hasn't voted yet, use eventOptions order and save as vote
         const freshRankings = {};
+        const newVotes = {};
+
         for (const category in eventOptions) {
-          freshRankings[category] = [...eventOptions[category]];
+          const options = [...eventOptions[category]];
+          freshRankings[category] = options;
+
+          const scores = {};
+          options.forEach((option, index) => {
+            scores[option] = options.length - index;
+          });
+          newVotes[category] = scores;
+
+          // Save default vote to Firestore
+          await saveRankingVoteToFirestore(eventID, userID, category, scores);
         }
+
         setRankings(freshRankings);
+        setVotes(newVotes);
       }
     };
 
@@ -51,7 +67,6 @@ function Voting() {
     const [movedItem] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, movedItem);
 
-    // Calculate scores
     const scores = {};
     reordered.forEach((item, index) => {
       scores[item] = reordered.length - index;
@@ -67,7 +82,6 @@ function Voting() {
       [category]: scores,
     }));
 
-    // Save to Firestore
     await saveRankingVoteToFirestore(eventID, userID, category, scores);
   };
 

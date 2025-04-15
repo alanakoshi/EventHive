@@ -1,9 +1,8 @@
+// Events.js
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { fetchUserEvents, fetchEventByID } from './firebaseHelpers';
-import { EventContext } from './EventContext';
-import { CohostContext } from './CohostContext';
 import './App.css';
 
 function Events() {
@@ -34,7 +33,19 @@ function Events() {
       localStorage.setItem("venue", JSON.stringify(eventData.venue || []));
       localStorage.setItem("cohosts", JSON.stringify(eventData.cohosts || []));
     }
-  
+
+    navigate("/plan");
+  };
+
+  const handleNewEvent = () => {
+    localStorage.removeItem("eventID");
+    localStorage.removeItem("continuePlanning");
+    localStorage.removeItem("eventName");
+    localStorage.removeItem("theme");
+    localStorage.removeItem("dates");
+    localStorage.removeItem("venue");
+    localStorage.removeItem("cohosts");
+
     navigate("/plan");
   };
 
@@ -42,12 +53,19 @@ function Events() {
     <div className="container">
       {/* Back button aligned left */}
       <Link to="/home" className="btn back-btn rounded-circle shadow-sm back-icon">
-        <i
-          className="bi bi-arrow-left-short"
-        ></i>
+        <i className="bi bi-arrow-left-short"></i>
       </Link>
 
       <h1 className="text-center">Events</h1>
+
+      <button
+        className="next-button active"
+        onClick={handleNewEvent}
+        style={{ backgroundColor: '#ffcf34', color: '#000', marginBottom: '1rem' }}
+      >
+        Create New Event
+      </button>
+
       {events.length === 0 ? (
         <p>No events found.</p>
       ) : (

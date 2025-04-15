@@ -23,18 +23,18 @@ function Events() {
   }, []);
 
   const handleContinuePlanning = async (eventID) => {
-    localStorage.setItem("eventID", eventID);
-
-    // Fetch event data from Firestore
     const eventData = await fetchEventByID(eventID);
-
-    // Persist event fields
-    if (eventData?.name) localStorage.setItem("eventName", eventData.name);
-    if (eventData?.cohosts) localStorage.setItem("cohosts", JSON.stringify(eventData.cohosts));
-    if (eventData?.dates) localStorage.setItem("eventDates", JSON.stringify(eventData.dates));
-    if (eventData?.theme) localStorage.setItem("eventTheme", JSON.stringify(eventData.theme));
-    if (eventData?.venue) localStorage.setItem("eventVenue", JSON.stringify(eventData.venue));
-
+  
+    if (eventData) {
+      localStorage.setItem("eventID", eventID);
+      localStorage.setItem("continuePlanning", "true");
+      localStorage.setItem("eventName", eventData.name || "");
+      localStorage.setItem("theme", JSON.stringify(eventData.theme || []));
+      localStorage.setItem("dates", JSON.stringify(eventData.dates || []));
+      localStorage.setItem("venue", JSON.stringify(eventData.venue || []));
+      localStorage.setItem("cohosts", JSON.stringify(eventData.cohosts || []));
+    }
+  
     navigate("/plan");
   };
 

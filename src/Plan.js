@@ -14,17 +14,24 @@ function Plan() {
 
   useEffect(() => {
     const loadEvent = async () => {
-      const eventID = localStorage.getItem("eventID");
-      if (eventID) {
-        const event = await fetchEventByID(eventID);
-        if (event?.name) {
-          setEventName(event.name);
-          setIsSubmitted(true);
+      const continuePlanning = localStorage.getItem("continuePlanning");
+  
+      if (continuePlanning === "true") {
+        const eventID = localStorage.getItem("eventID");
+        if (eventID) {
+          const event = await fetchEventByID(eventID);
+          if (event?.name) {
+            setEventName(event.name);
+            setIsSubmitted(true);
+          }
         }
       }
+  
+      localStorage.removeItem("continuePlanning"); // clean it up
     };
+  
     loadEvent();
-  }, []);
+  }, []);  
 
   const handleInputChange = (e) => {
     setEventName(e.target.value);

@@ -1,14 +1,12 @@
-// Tasks.js
 import { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CohostContext } from './CohostContext';
 import { auth } from './firebase';
 import {
-  addTaskToFirestore,
-  fetchTasksForEvent,
   fetchUserNameByEmail,
   fetchUserNameByUID,
   fetchEventByID,
+  updateEventInFirestore,
 } from './firebaseHelpers';
 import './App.css';
 import './Voting.css';
@@ -24,20 +22,17 @@ function Tasks() {
 
   useEffect(() => {
     const loadData = async () => {
-      const loadedTasks = await fetchTasksForEvent(eventID);
-      const groupedTasks = {};
-      loadedTasks.forEach((task) => {
-        if (!groupedTasks[task.cohostName]) {
-          groupedTasks[task.cohostName] = [];
-        }
-        groupedTasks[task.cohostName].push(task);
-      });
-      setTasks(groupedTasks);
-
       const event = await fetchEventByID(eventID);
+      const loadedTasks = event?.tasks || [];
+      const grouped = {};
+      loadedTasks.forEach(task => {
+        if (!grouped[task.cohostName]) grouped[task.cohostName] = [];
+        grouped[task.cohostName].push(task);
+      });
+      setTasks(grouped);
+
       const hostID = event?.hostID;
       const hostName = hostID ? await fetchUserNameByUID(hostID) : 'Host';
-
       const emails = [...new Set([...cohosts.map(c => c.email), currentUserEmail])];
       const nameMap = {};
 
@@ -46,11 +41,7 @@ function Tasks() {
         nameMap[email] = name || email;
       }
 
-      // Set host name only if current user is NOT the host
-      if (hostID !== currentUserID) {
-        nameMap['HOST'] = hostName;
-      }
-
+      if (hostID !== currentUserID) nameMap['HOST'] = hostName;
       nameMap[currentUserEmail] = currentUserName;
       setUserNames(nameMap);
     };
@@ -58,42 +49,58 @@ function Tasks() {
     loadData();
   }, [cohosts, eventID, currentUserEmail, currentUserName, currentUserID]);
 
-  const allTaskOwners =
-    'HOST' in userNames
-      ? ['HOST', ...new Set([...cohosts.map(c => c.email), currentUserEmail])]
-      : [...new Set([...cohosts.map(c => c.email), currentUserEmail])];
+  const persistTasksToFirestore = async (newTasks) => {
+    const allTasks = [];
+    for (const owner in newTasks) {
+      newTasks[owner].forEach(task =>
+        allTasks.push({ ...task, cohostName: owner })
+      );
+    }
+    await updateEventInFirestore(eventID, { tasks: allTasks });
+  };
 
   const handleAddTask = async (owner, text) => {
     const name = userNames[owner] || owner;
     if (!text.trim()) return;
 
-    await addTaskToFirestore(eventID, name, text);
     const newTask = { text, completed: false };
-
-    setTasks((prev) => ({
-      ...prev,
-      [name]: [...(prev[name] || []), newTask],
-    }));
+    const updated = {
+      ...tasks,
+      [name]: [...(tasks[name] || []), newTask],
+    };
+    setTasks(updated);
+    await persistTasksToFirestore(updated);
   };
 
-  const handleDeleteTask = (name, index) => {
+  const handleDeleteTask = async (name, index) => {
     const updated = tasks[name].filter((_, i) => i !== index);
-    setTasks((prev) => ({ ...prev, [name]: updated }));
+    const newState = { ...tasks, [name]: updated };
+    setTasks(newState);
+    await persistTasksToFirestore(newState);
   };
 
-  const handleToggleComplete = (name, index) => {
+  const handleToggleComplete = async (name, index) => {
     const updated = tasks[name].map((task, i) =>
       i === index ? { ...task, completed: !task.completed } : task
     );
-    setTasks((prev) => ({ ...prev, [name]: updated }));
+    const newState = { ...tasks, [name]: updated };
+    setTasks(newState);
+    await persistTasksToFirestore(newState);
   };
 
-  const handleEditTask = (name, index, newText) => {
+  const handleEditTask = async (name, index, newText) => {
     const updated = tasks[name].map((task, i) =>
       i === index ? { ...task, text: newText } : task
     );
-    setTasks((prev) => ({ ...prev, [name]: updated }));
+    const newState = { ...tasks, [name]: updated };
+    setTasks(newState);
+    await persistTasksToFirestore(newState);
   };
+
+  const allTaskOwners =
+    'HOST' in userNames
+      ? ['HOST', ...new Set([...cohosts.map(c => c.email), currentUserEmail])]
+      : [...new Set([...cohosts.map(c => c.email), currentUserEmail])];
 
   return (
     <div className="container">

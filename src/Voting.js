@@ -5,7 +5,7 @@ import { EventContext } from './EventContext';
 import './Voting.css';
 import './App.css';
 import { auth } from './firebase';
-import { fetchEventByID, updateEventInFirestore } from './firebaseHelpers';
+import { fetchEventByID, saveRankingVoteToFirestore } from './firebaseHelpers';
 
 function Voting() {
   const { eventOptions, setVotes } = useContext(EventContext);
@@ -13,58 +13,62 @@ function Voting() {
   const userID = auth.currentUser?.uid;
 
   const [rankings, setRankings] = useState({});
-  const [selected, setSelected] = useState({});
-
-  // 🔄 Load previous votes for this user
+  
+  // Load previous votes if they exist
   useEffect(() => {
-    const loadPreviousVotes = async () => {
-      const event = await fetchEventByID(eventID);
-      if (event?.votes && event.votes[userID]) {
-        const userVotes = event.votes[userID];
-        const newRankings = {};
+    const loadVotes = async () => {
+      const eventData = await fetchEventByID(eventID);
+      if (eventData?.votes && eventData.votes[userID]) {
+        const userVotes = eventData.votes[userID];
+        const loadedRankings = {};
 
         for (const category of Object.keys(userVotes)) {
           const sortedOptions = Object.entries(userVotes[category])
             .sort((a, b) => b[1] - a[1])
             .map(([option]) => option);
-          newRankings[category] = sortedOptions;
+          loadedRankings[category] = sortedOptions;
         }
 
-        setRankings(newRankings);
-        setVotes(event.votes[userID]);
+        setRankings(loadedRankings);
+        setVotes(userVotes);
       } else {
-        const fresh = {};
+        const freshRankings = {};
         for (const category in eventOptions) {
-          fresh[category] = [...eventOptions[category]];
+          freshRankings[category] = [...eventOptions[category]];
         }
-        setRankings(fresh);
+        setRankings(freshRankings);
       }
     };
 
-    loadPreviousVotes();
-  }, [eventID, userID, setVotes, eventOptions]);
+    loadVotes();
+  }, [eventID, userID, eventOptions, setVotes]);
 
-  // 🧩 Handle drag reordering
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
+
     const category = result.source.droppableId;
     const reordered = Array.from(rankings[category]);
     const [movedItem] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, movedItem);
 
+    // Calculate scores
     const scores = {};
     reordered.forEach((item, index) => {
       scores[item] = reordered.length - index;
     });
 
-    const updatedVotes = { ...rankings, [category]: reordered };
-    setRankings(updatedVotes);
-    setVotes((prev) => ({ ...prev, [category]: scores }));
+    setRankings((prev) => ({
+      ...prev,
+      [category]: reordered,
+    }));
 
-    // 🔒 Save vote to Firestore per user
-    const event = await fetchEventByID(eventID);
-    const updatedAllVotes = { ...(event.votes || {}), [userID]: { ...(event.votes?.[userID] || {}), [category]: scores } };
-    await updateEventInFirestore(eventID, { votes: updatedAllVotes });
+    setVotes((prev) => ({
+      ...prev,
+      [category]: scores,
+    }));
+
+    // Save to Firestore
+    await saveRankingVoteToFirestore(eventID, userID, category, scores);
   };
 
   const allCategoriesRanked = Object.keys(eventOptions).every(
@@ -129,11 +133,7 @@ function Voting() {
             Next
           </Link>
         ) : (
-          <button
-            className="next-button disabled"
-            disabled
-            style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}
-          >
+          <button className="next-button disabled" disabled>
             Next
           </button>
         )}

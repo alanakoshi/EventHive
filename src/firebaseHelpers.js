@@ -10,6 +10,7 @@ import {
   getDoc,
   query,
   where,
+  arrayUnion
 } from 'firebase/firestore';
 
 // Add User
@@ -70,32 +71,48 @@ export const addCohostToFirestore = async (eventID, name, email, role = 'cohost'
 };
 
 // Add Vote
-export const addVoteToFirestore = async (eventID, userID, category, option) => {
+export const addVoteToFirestore = async (eventID, userID, category, scores) => {
   try {
-    await addDoc(collection(db, 'votes'), {
-      eventID,
-      userID,
-      category,
-      option,
-      votedAt: serverTimestampFn(),
+    const eventRef = doc(db, 'events', eventID);
+    const eventSnap = await getDoc(eventRef);
+
+    const existingVotes = eventSnap.exists() && eventSnap.data().votes ? eventSnap.data().votes : {};
+
+    const updatedVotes = {
+      ...existingVotes,
+      [userID]: {
+        ...(existingVotes[userID] || {}),
+        [category]: scores,
+      },
+    };
+
+    await updateDoc(eventRef, {
+      votes: updatedVotes,
+      lastVoteAt: serverTimestampFn(), // Optional: track timestamp of latest vote
     });
+
+    console.log('Vote successfully saved!');
   } catch (error) {
-    console.error('Error adding vote:', error);
+    console.error('Error saving vote:', error);
   }
 };
 
 // Add Task
 export const addTaskToFirestore = async (eventID, cohostName, text) => {
   try {
-    await addDoc(collection(db, 'tasks'), {
-      eventID,
+    const task = {
       cohostName,
       text,
       completed: false,
       createdAt: serverTimestampFn(),
+    };
+
+    const eventRef = doc(db, 'events', eventID);
+    await updateDoc(eventRef, {
+      tasks: arrayUnion(task),
     });
   } catch (error) {
-    console.error('Error adding task:', error);
+    console.error('Error adding task to event document:', error);
   }
 };
 
@@ -127,9 +144,12 @@ export const fetchUserEvents = async (uid, email) => {
 
 // Fetch Tasks
 export const fetchTasksForEvent = async (eventID) => {
-  const q = query(collection(db, 'tasks'), where('eventID', '==', eventID));
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => doc.data());
+  const eventDocRef = doc(db, 'events', eventID);
+  const eventSnap = await getDoc(eventDocRef);
+  if (eventSnap.exists()) {
+    return eventSnap.data().tasks || [];
+  }
+  return [];
 };
 
 // Fetch Event by ID
@@ -168,3 +188,36 @@ export const fetchVotesForEvent = async (eventID) => {
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => doc.data());
 };
+
+// Save Ranking Vote to Firestore
+export const saveRankingVoteToFirestore = async (eventID, userID, category, scores) => {
+  try {
+    const eventDocRef = doc(db, 'events', eventID);
+    const eventSnap = await getDoc(eventDocRef);
+
+    if (!eventSnap.exists()) {
+      console.error('Event not found!');
+      return;
+    }
+
+    const existingVotes = eventSnap.data().votes || {};
+
+    const updatedVotes = {
+      ...existingVotes,
+      [userID]: {
+        ...(existingVotes[userID] || {}),
+        [category]: scores, // Update just this category for this user
+      },
+    };
+
+    await updateDoc(eventDocRef, {
+      votes: updatedVotes,
+      lastVoteAt: serverTimestampFn(), // Optional tracking of vote time
+    });
+
+    console.log('Ranking vote successfully saved!');
+  } catch (error) {
+    console.error('Error saving ranking vote:', error);
+  }
+};
+

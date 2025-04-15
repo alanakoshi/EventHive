@@ -12,7 +12,7 @@ import {
   where,
 } from 'firebase/firestore';
 
-// Add User to Firestore
+// Add User
 export const addUserToFirestore = async (uid, name, email) => {
   try {
     await setDoc(doc(db, 'users', uid), {
@@ -22,13 +22,13 @@ export const addUserToFirestore = async (uid, name, email) => {
       profilePic: '',
       createdAt: serverTimestampFn(),
     });
-    console.log('User added to Firestore');
+    console.log('User added');
   } catch (error) {
-    console.error('Error adding user to Firestore:', error);
+    console.error('Error adding user:', error);
   }
 };
 
-// Add Event to Firestore
+// Add Event
 export const addEventToFirestore = async (hostID, name, date, location) => {
   try {
     const eventRef = await addDoc(collection(db, 'events'), {
@@ -38,14 +38,13 @@ export const addEventToFirestore = async (hostID, name, date, location) => {
       location,
       createdAt: serverTimestampFn(),
     });
-    console.log('Event added to Firestore');
     return eventRef.id;
   } catch (error) {
     console.error('Error adding event:', error);
   }
 };
 
-// Add Cohost to Firestore (with name/email logic)
+// Add Cohost
 export const addCohostToFirestore = async (eventID, name, email, role = 'cohost') => {
   try {
     let userID = null;
@@ -65,13 +64,12 @@ export const addCohostToFirestore = async (eventID, name, email, role = 'cohost'
       role,
       addedAt: serverTimestampFn(),
     });
-    console.log('Cohost invited');
   } catch (error) {
     console.error('Error adding cohost:', error);
   }
 };
 
-// Add Vote to Firestore
+// Add Vote
 export const addVoteToFirestore = async (eventID, userID, category, option) => {
   try {
     await addDoc(collection(db, 'votes'), {
@@ -81,13 +79,12 @@ export const addVoteToFirestore = async (eventID, userID, category, option) => {
       option,
       votedAt: serverTimestampFn(),
     });
-    console.log('Vote added to Firestore');
   } catch (error) {
     console.error('Error adding vote:', error);
   }
 };
 
-// Add Task to Firestore
+// Add Task
 export const addTaskToFirestore = async (eventID, cohostName, text) => {
   try {
     await addDoc(collection(db, 'tasks'), {
@@ -97,7 +94,6 @@ export const addTaskToFirestore = async (eventID, cohostName, text) => {
       completed: false,
       createdAt: serverTimestampFn(),
     });
-    console.log('Task added to Firestore');
   } catch (error) {
     console.error('Error adding task:', error);
   }
@@ -109,10 +105,10 @@ export const updateEventInFirestore = async (eventID, data) => {
   await updateDoc(eventDocRef, data);
 };
 
-// Get Events for Host or Cohost
+// Fetch Events
 export const fetchUserEvents = async (uid, email) => {
-  const eventsAsHostQuery = query(collection(db, 'events'), where('hostID', '==', uid));
-  const hostSnapshot = await getDocs(eventsAsHostQuery);
+  const hostEventsQuery = query(collection(db, 'events'), where('hostID', '==', uid));
+  const hostSnapshot = await getDocs(hostEventsQuery);
   const hostEvents = hostSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
   const cohostQuery = query(collection(db, 'cohosts'), where('email', '==', email));
@@ -129,7 +125,7 @@ export const fetchUserEvents = async (uid, email) => {
   return [...hostEvents, ...cohostEvents];
 };
 
-// Fetch Tasks for Event
+// Fetch Tasks
 export const fetchTasksForEvent = async (eventID) => {
   const q = query(collection(db, 'tasks'), where('eventID', '==', eventID));
   const snapshot = await getDocs(q);
@@ -140,7 +136,6 @@ export const fetchTasksForEvent = async (eventID) => {
 export const fetchEventByID = async (eventID) => {
   const eventDocRef = doc(db, 'events', eventID);
   const eventSnap = await getDoc(eventDocRef);
-
   if (eventSnap.exists()) {
     return { id: eventSnap.id, ...eventSnap.data() };
   }
@@ -155,4 +150,14 @@ export const fetchUserNameByEmail = async (email) => {
     return snapshot.docs[0].data().name || email;
   }
   return email;
+};
+
+// Fetch Username by UID
+export const fetchUserNameByUID = async (uid) => {
+  const userRef = doc(db, 'users', uid);
+  const userSnap = await getDoc(userRef);
+  if (userSnap.exists()) {
+    return userSnap.data().name || uid;
+  }
+  return uid;
 };

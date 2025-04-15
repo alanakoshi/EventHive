@@ -1,70 +1,70 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { EventContext } from './EventContext';
 import './Voting.css';
 import './App.css';
-import { addVoteToFirestore } from './firebaseHelpers';
 import { auth } from './firebase';
+import { fetchEventByID, updateEventInFirestore } from './firebaseHelpers';
 
 function Voting() {
   const { eventOptions, setVotes } = useContext(EventContext);
-  const eventID = localStorage.getItem("eventID");
+  const eventID = localStorage.getItem('eventID');
+  const userID = auth.currentUser?.uid;
 
-  const [rankings, setRankings] = useState(() => {
-    const initial = {};
-    for (const category in eventOptions) {
-      initial[category] = [...eventOptions[category]];
-    }
-    return initial;
-  });
-
+  const [rankings, setRankings] = useState({});
   const [selected, setSelected] = useState({});
-  const [userVotes, setUserVotes] = useState({});
 
-  const handleDragEnd = (result) => {
+  // 🔄 Load previous votes for this user
+  useEffect(() => {
+    const loadPreviousVotes = async () => {
+      const event = await fetchEventByID(eventID);
+      if (event?.votes && event.votes[userID]) {
+        const userVotes = event.votes[userID];
+        const newRankings = {};
+
+        for (const category of Object.keys(userVotes)) {
+          const sortedOptions = Object.entries(userVotes[category])
+            .sort((a, b) => b[1] - a[1])
+            .map(([option]) => option);
+          newRankings[category] = sortedOptions;
+        }
+
+        setRankings(newRankings);
+        setVotes(event.votes[userID]);
+      } else {
+        const fresh = {};
+        for (const category in eventOptions) {
+          fresh[category] = [...eventOptions[category]];
+        }
+        setRankings(fresh);
+      }
+    };
+
+    loadPreviousVotes();
+  }, [eventID, userID, setVotes, eventOptions]);
+
+  // 🧩 Handle drag reordering
+  const handleDragEnd = async (result) => {
     if (!result.destination) return;
-    if (result.source.droppableId !== result.destination.droppableId) return;
-
     const category = result.source.droppableId;
     const reordered = Array.from(rankings[category]);
     const [movedItem] = reordered.splice(result.source.index, 1);
     reordered.splice(result.destination.index, 0, movedItem);
 
-    setRankings((prev) => ({
-      ...prev,
-      [category]: reordered,
-    }));
-
-    // Update scores locally (ranked top-down)
     const scores = {};
     reordered.forEach((item, index) => {
       scores[item] = reordered.length - index;
     });
 
-    setVotes((prev) => ({
-      ...prev,
-      [category]: scores,
-    }));
-  };
+    const updatedVotes = { ...rankings, [category]: reordered };
+    setRankings(updatedVotes);
+    setVotes((prev) => ({ ...prev, [category]: scores }));
 
-  const handleClick = async (category, option) => {
-    // Prevent re-voting the same option
-    if (userVotes[category] === option) return;
-
-    // Update Firestore with the single vote (not ranking)
-    await addVoteToFirestore(eventID, auth.currentUser.uid, category, option);
-
-    // Update UI state
-    setUserVotes((prev) => ({ ...prev, [category]: option }));
-    setSelected((prev) => ({ ...prev, [category]: option }));
-  };
-
-  const calculatePercentage = (category, option) => {
-    if (selected[category]) {
-      return selected[category] === option ? '100' : '0';
-    }
-    return '0';
+    // 🔒 Save vote to Firestore per user
+    const event = await fetchEventByID(eventID);
+    const updatedAllVotes = { ...(event.votes || {}), [userID]: { ...(event.votes?.[userID] || {}), [category]: scores } };
+    await updateEventInFirestore(eventID, { votes: updatedAllVotes });
   };
 
   const allCategoriesRanked = Object.keys(eventOptions).every(
@@ -73,21 +73,18 @@ function Voting() {
 
   return (
     <div className="container">
-      {/* Progress bar */}
       <div className="progress-container">
         <div className="progress-bar" style={{ width: '70%' }} />
         <div className="progress-percentage">70%</div>
       </div>
 
-      {/* Header */}
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
-        <Link to="/budget" className="btn back-btn rounded-circle shadow-sm back-icon">
+        <Link to="/venue" className="btn back-btn rounded-circle shadow-sm back-icon">
           <i className="bi bi-arrow-left-short"></i>
         </Link>
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Voting</h1>
       </div>
 
-      {/* Voting UI */}
       <DragDropContext onDragEnd={handleDragEnd}>
         {Object.keys(eventOptions).map((category) => (
           <div key={category} className="category-section">
@@ -99,24 +96,17 @@ function Voting() {
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                 >
-                  {eventOptions[category].map((option, index) => (
+                  {(rankings[category] || []).map((option, index) => (
                     <Draggable key={option} draggableId={option} index={index}>
                       {(provided) => (
                         <div
-                          className={`option-item ${selected[category] === option ? 'selected' : ''}`}
+                          className="option-item"
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
-                          onClick={() => handleClick(category, option)}
                         >
                           <span className="option-rank">{index + 1}.</span>
                           <span className="option-text">{option}</span>
-                          {selected[category] && (
-                            <span className="option-percentage"> - {calculatePercentage(category, option)}%</span>
-                          )}
-                          {selected[category] === option && (
-                            <span className="checkmark">&#10003;</span>
-                          )}
                         </div>
                       )}
                     </Draggable>
@@ -129,7 +119,6 @@ function Voting() {
         ))}
       </DragDropContext>
 
-      {/* Next Button */}
       <div className="next-button-row">
         {allCategoriesRanked ? (
           <Link

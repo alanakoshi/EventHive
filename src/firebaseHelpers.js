@@ -161,3 +161,10 @@ export const fetchUserNameByUID = async (uid) => {
   }
   return uid;
 };
+
+// Fetch all votes for an event
+export const fetchVotesForEvent = async (eventID) => {
+  const q = query(collection(db, 'votes'), where('eventID', '==', eventID));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => doc.data());
+};

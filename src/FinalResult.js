@@ -1,28 +1,53 @@
-import { useContext } from 'react';
+// FinalResult.js
+import { useState, useEffect, useContext } from 'react';
 import { EventContext } from './EventContext';
 import { Link } from 'react-router-dom';
+import { fetchEventByID } from './firebaseHelpers';
 import './Voting.css';
 import './App.css';
 
 function FinalResult() {
-  const { eventOptions, votes } = useContext(EventContext);
+  const { eventOptions } = useContext(EventContext);
+  const [finalVotes, setFinalVotes] = useState({});
 
-  // Get ranked options or fallback to eventOptions
+  useEffect(() => {
+    const loadVotes = async () => {
+      const eventID = localStorage.getItem('eventID');
+      if (!eventID) return;
+      const eventData = await fetchEventByID(eventID);
+      if (eventData?.votes) {
+        setFinalVotes(eventData.votes);
+      }
+    };
+    loadVotes();
+  }, []);
+
   const getRankedOptions = (category) => {
-    const categoryVotes = votes[category];
-
-    if (categoryVotes && Object.keys(categoryVotes).length > 0) {
-      return Object.entries(categoryVotes)
+    const aggregated = {};
+  
+    // Sum up scores across all users
+    for (const userID in finalVotes) {
+      const userVotes = finalVotes[userID];
+      const categoryVotes = userVotes[category];
+      if (!categoryVotes) continue;
+  
+      for (const [option, score] of Object.entries(categoryVotes)) {
+        aggregated[option] = (aggregated[option] || 0) + score;
+      }
+    }
+  
+    if (Object.keys(aggregated).length > 0) {
+      return Object.entries(aggregated)
         .sort((a, b) => b[1] - a[1])
         .map(([option, score]) => ({ option, score }));
     }
-
-    //Fallback: return original options with default scores
+  
+    // Fallback if no votes yet
     return eventOptions[category]?.map((option, index) => ({
       option,
-      score: eventOptions[category].length - index, // reverse order = implied top-down
+      score: eventOptions[category].length - index
     })) || [];
-  };
+  };  
 
   return (
     <div className="container">
@@ -38,7 +63,6 @@ function FinalResult() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Final Rankings</h1>
       </div>
 
-      {/* Display rankings */}
       {Object.keys(eventOptions).map((category) => {
         const ranked = getRankedOptions(category);
         return (

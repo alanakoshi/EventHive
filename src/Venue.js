@@ -46,6 +46,40 @@ function Venue() {
     }));
   };
 
+  const tryAddVenue = () => {
+    if (venueName.trim() === "") {
+      setShowWarning(true);
+      setTimeout(() => setShowWarning(false), 2000);
+      return;
+    }
+    setEventOptions((prevOptions) => ({
+      ...prevOptions,
+      venue: [...(prevOptions.venue || []), venueName]
+    }));
+    setVenueName("");
+  };
+  
+  const handleEditClick = (index) => {
+    setEditingIndex(index);
+    setEditingValue(eventOptions.venue[index]);
+  };
+  
+  const handleEditChange = (e) => {
+    setEditingValue(e.target.value);
+  };
+  
+  const trySaveEdit = () => {
+    if (editingValue.trim() === "") return;
+    const updatedVenues = [...eventOptions.venue];
+    updatedVenues[editingIndex] = editingValue;
+    setEventOptions((prev) => ({
+      ...prev,
+      venue: updatedVenues,
+    }));
+    setEditingIndex(null);
+    setEditingValue("");
+  };
+
   return (
     <div className="container">
       {/* Progress bar section */}

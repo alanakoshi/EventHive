@@ -96,7 +96,7 @@ function Theme() {
   return (
     <div className="container">
       <div className="progress-container">
-        <div className="progress-bar" style={{ width: '40%' }} />
+        <div className="progress-bar" style={{ width: '40%', backgroundColor: '#ffc107' }} />
         <div className="progress-percentage">40%</div>
       </div>
 

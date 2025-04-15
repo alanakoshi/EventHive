@@ -85,7 +85,7 @@ function Venue() {
   return (
     <div className="container">
       <div className="progress-container">
-        <div className="progress-bar" style={{ width: '50%' }} />
+        <div className="progress-bar" style={{ width: '50%', backgroundColor: '#ffc107' }} />
         <div className="progress-percentage">50%</div>
       </div>
 

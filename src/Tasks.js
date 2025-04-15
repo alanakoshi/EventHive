@@ -105,7 +105,7 @@ function Tasks() {
   return (
     <div className="container">
       <div className="progress-container">
-        <div className="progress-bar" style={{ width: '80%' }} />
+        <div className="progress-bar" style={{ width: '80%', backgroundColor: '#ffc107' }} />
         <div className="progress-percentage">80%</div>
       </div>
 

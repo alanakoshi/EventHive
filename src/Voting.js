@@ -92,7 +92,7 @@ function Voting() {
   return (
     <div className="container">
       <div className="progress-container">
-        <div className="progress-bar" style={{ width: '70%' }} />
+        <div className="progress-bar" style={{ width: '70%', backgroundColor: '#ffc107' }} />
         <div className="progress-percentage">70%</div>
       </div>
 

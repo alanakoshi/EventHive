@@ -103,7 +103,7 @@ function SelectDate() {
   return (
     <div className="container">
       <div className="progress-container">
-        <div className="progress-bar" style={{ width: '30%' }} />
+        <div className="progress-bar" style={{ width: '30%', backgroundColor: '#ffc107' }} />
         <div className="progress-percentage">30%</div>
       </div>
 

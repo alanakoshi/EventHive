@@ -9,9 +9,10 @@ import {
   getDocs,
   getDoc,
   query,
-  where
+  where,
 } from 'firebase/firestore';
 
+// Add User to Firestore
 export const addUserToFirestore = async (uid, name, email) => {
   try {
     await setDoc(doc(db, 'users', uid), {
@@ -19,7 +20,7 @@ export const addUserToFirestore = async (uid, name, email) => {
       name,
       email,
       profilePic: '',
-      createdAt: serverTimestampFn()
+      createdAt: serverTimestampFn(),
     });
     console.log('User added to Firestore');
   } catch (error) {
@@ -27,6 +28,7 @@ export const addUserToFirestore = async (uid, name, email) => {
   }
 };
 
+// Add Event to Firestore
 export const addEventToFirestore = async (hostID, name, date, location) => {
   try {
     const eventRef = await addDoc(collection(db, 'events'), {
@@ -34,7 +36,7 @@ export const addEventToFirestore = async (hostID, name, date, location) => {
       name,
       date,
       location,
-      createdAt: serverTimestampFn()
+      createdAt: serverTimestampFn(),
     });
     console.log('Event added to Firestore');
     return eventRef.id;
@@ -43,7 +45,8 @@ export const addEventToFirestore = async (hostID, name, date, location) => {
   }
 };
 
-export const addCohostToFirestore = async (eventID, email, name, role = 'cohost') => {
+// Add Cohost to Firestore (with name/email logic)
+export const addCohostToFirestore = async (eventID, name, email, role = 'cohost') => {
   try {
     let userID = null;
     const userQuery = query(collection(db, 'users'), where('email', '==', email));
@@ -60,7 +63,7 @@ export const addCohostToFirestore = async (eventID, email, name, role = 'cohost'
       name,
       userID,
       role,
-      addedAt: serverTimestampFn()
+      addedAt: serverTimestampFn(),
     });
     console.log('Cohost invited');
   } catch (error) {
@@ -68,6 +71,7 @@ export const addCohostToFirestore = async (eventID, email, name, role = 'cohost'
   }
 };
 
+// Add Vote to Firestore
 export const addVoteToFirestore = async (eventID, userID, category, option) => {
   try {
     await addDoc(collection(db, 'votes'), {
@@ -75,7 +79,7 @@ export const addVoteToFirestore = async (eventID, userID, category, option) => {
       userID,
       category,
       option,
-      votedAt: serverTimestampFn()
+      votedAt: serverTimestampFn(),
     });
     console.log('Vote added to Firestore');
   } catch (error) {
@@ -83,20 +87,29 @@ export const addVoteToFirestore = async (eventID, userID, category, option) => {
   }
 };
 
+// Add Task to Firestore
+export const addTaskToFirestore = async (eventID, cohostName, text) => {
+  try {
+    await addDoc(collection(db, 'tasks'), {
+      eventID,
+      cohostName,
+      text,
+      completed: false,
+      createdAt: serverTimestampFn(),
+    });
+    console.log('Task added to Firestore');
+  } catch (error) {
+    console.error('Error adding task:', error);
+  }
+};
+
+// Update Event
 export const updateEventInFirestore = async (eventID, data) => {
   const eventDocRef = doc(db, 'events', eventID);
   await updateDoc(eventDocRef, data);
 };
 
-export const getUserIDByName = async (name) => {
-  const q = query(collection(db, 'users'), where('name', '==', name));
-  const snapshot = await getDocs(q);
-  if (!snapshot.empty) {
-    return snapshot.docs[0].data().uid;
-  }
-  return null;
-};
-
+// Get Events for Host or Cohost
 export const fetchUserEvents = async (uid, email) => {
   const eventsAsHostQuery = query(collection(db, 'events'), where('hostID', '==', uid));
   const hostSnapshot = await getDocs(eventsAsHostQuery);
@@ -116,38 +129,14 @@ export const fetchUserEvents = async (uid, email) => {
   return [...hostEvents, ...cohostEvents];
 };
 
-export const addTaskToFirestore = async (eventID, cohostName, text) => {
-  try {
-    await addDoc(collection(db, 'tasks'), {
-      eventID,
-      cohostName,
-      text,
-      completed: false,
-      createdAt: serverTimestampFn()
-    });
-    console.log('Task added to Firestore');
-  } catch (error) {
-    console.error('Error adding task:', error);
-  }
-};
-
+// Fetch Tasks for Event
 export const fetchTasksForEvent = async (eventID) => {
   const q = query(collection(db, 'tasks'), where('eventID', '==', eventID));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => doc.data());
 };
 
-export const fetchUserNameByEmail = async (email) => {
-  const q = query(collection(db, 'users'), where('email', '==', email));
-  const snapshot = await getDocs(q);
-
-  if (!snapshot.empty) {
-    return snapshot.docs[0].data().name || email;
-  }
-  return email;
-};
-
-// Fetch a specific event's data by eventID
+// Fetch Event by ID
 export const fetchEventByID = async (eventID) => {
   const eventDocRef = doc(db, 'events', eventID);
   const eventSnap = await getDoc(eventDocRef);
@@ -156,4 +145,14 @@ export const fetchEventByID = async (eventID) => {
     return { id: eventSnap.id, ...eventSnap.data() };
   }
   return null;
+};
+
+// Fetch Username by Email
+export const fetchUserNameByEmail = async (email) => {
+  const q = query(collection(db, 'users'), where('email', '==', email));
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    return snapshot.docs[0].data().name || email;
+  }
+  return email;
 };

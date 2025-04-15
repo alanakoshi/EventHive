@@ -4,6 +4,8 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { EventContext } from './EventContext';
 import './Voting.css';
 import './App.css';
+import { addVoteToFirestore } from './firebaseHelpers';
+import { auth } from './firebase';
 
 function Voting() {
   const { eventOptions, setVotes } = useContext(EventContext);

@@ -16,24 +16,26 @@ function Venue() {
   const editRef = useRef(null);
 
   useEffect(() => {
+    const eventID = localStorage.getItem('eventID');
+  
     const loadVenues = async () => {
-      const eventID = localStorage.getItem('eventID');
-      const continuePlanning = localStorage.getItem('continuePlanning') === 'true';
-
       if (!eventID) return;
-
-      if (continuePlanning) {
-        const event = await fetchEventByID(eventID);
-        const loadedVenues = event?.venue || [];
-        setEventOptions(prev => ({ ...prev, venue: loadedVenues }));
-      } else {
-        // New event → Clear venues
-        setEventOptions(prev => ({ ...prev, venue: [] }));
-      }
+      const event = await fetchEventByID(eventID);
+      const fetchedVenues = event?.venue || [];
+  
+      setEventOptions(prev => {
+        if (JSON.stringify(prev.venue) !== JSON.stringify(fetchedVenues)) {
+          return { ...prev, venue: fetchedVenues };
+        }
+        return prev;
+      });
     };
-
+  
     loadVenues();
-  }, [setEventOptions]);
+    const interval = setInterval(loadVenues, 1000); // Auto-refresh every 3s
+  
+    return () => clearInterval(interval);
+  }, [setEventOptions]);  
 
   const handleInputChange = (e) => setVenueName(e.target.value);
   const handleEditChange = (e) => setEditingValue(e.target.value);

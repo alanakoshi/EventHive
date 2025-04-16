@@ -104,7 +104,7 @@ function FinalResult() {
     };
 
     loadData();
-    const interval = setInterval(loadData, 3000);
+    const interval = setInterval(loadData, 1000);
     return () => clearInterval(interval);
   }, []);
 

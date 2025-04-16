@@ -15,25 +15,29 @@ function Theme() {
   const editRef = useRef(null);
 
   useEffect(() => {
+    const eventID = localStorage.getItem("eventID");
+  
     const loadSavedThemes = async () => {
-      const eventID = localStorage.getItem("eventID");
-      const continuePlanning = localStorage.getItem("continuePlanning") === "true";
-
       if (!eventID) return;
-
-      if (continuePlanning) {
-        const event = await fetchEventByID(eventID);
-        const loadedThemes = event?.theme || [];
-        setEventOptions(prev => ({ ...prev, theme: loadedThemes }));
-        localStorage.setItem("theme", JSON.stringify(loadedThemes));
-      } else {
-        const localThemes = JSON.parse(localStorage.getItem("theme")) || [];
-        setEventOptions(prev => ({ ...prev, theme: localThemes }));
-      }
+  
+      const event = await fetchEventByID(eventID);
+      const fetchedThemes = event?.theme || [];
+  
+      // Only update if the fetched data is different
+      setEventOptions(prev => {
+        if (JSON.stringify(prev.theme) !== JSON.stringify(fetchedThemes)) {
+          localStorage.setItem("theme", JSON.stringify(fetchedThemes));
+          return { ...prev, theme: fetchedThemes };
+        }
+        return prev;
+      });
     };
-
+  
     loadSavedThemes();
-  }, [setEventOptions]);
+    const interval = setInterval(loadSavedThemes, 1000); // ⏱ Refresh every 1 seconds
+  
+    return () => clearInterval(interval);
+  }, [setEventOptions]);  
 
   const handleNext = async () => {
     const eventID = localStorage.getItem("eventID");

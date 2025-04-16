@@ -16,12 +16,15 @@ function Tasks() {
   const [tasks, setTasks] = useState({});
   const [userNames, setUserNames] = useState({});
   const eventID = localStorage.getItem('eventID');
-  const currentUserEmail = auth.currentUser?.email;
-  const currentUserID = auth.currentUser?.uid;
-  const currentUserName = auth.currentUser?.displayName || currentUserEmail;
+  const currentUser = auth.currentUser;
+  const currentUserEmail = currentUser?.email || '';
+  const currentUserID = currentUser?.uid || '';
+  const currentUserName = currentUser?.displayName || currentUserEmail;
 
   useEffect(() => {
     const loadData = async () => {
+      if (!eventID || !currentUserEmail || !currentUserID) return;
+
       const event = await fetchEventByID(eventID);
       const loadedTasks = event?.tasks || [];
       const grouped = {};
@@ -33,21 +36,33 @@ function Tasks() {
 
       const hostID = event?.hostID;
       const hostName = hostID ? await fetchUserNameByUID(hostID) : 'Host';
-      const emails = [...new Set([...cohosts.map(c => c.email), currentUserEmail])];
+
+      const emailsFromCohosts = event?.cohosts?.map(c => c.email) || [];
+      const namesFromCohosts = event?.cohosts?.reduce((acc, cur) => {
+        acc[cur.email] = cur.name;
+        return acc;
+      }, {}) || {};
+
+      const allEmails = [...new Set([...emailsFromCohosts, currentUserEmail])];
       const nameMap = {};
 
-      for (const email of emails) {
-        const name = await fetchUserNameByEmail(email);
-        nameMap[email] = name || email;
+      for (const email of allEmails) {
+        const fetchedName = await fetchUserNameByEmail(email);
+        nameMap[email] = fetchedName || namesFromCohosts[email] || email;
       }
 
-      if (hostID !== currentUserID) nameMap['HOST'] = hostName;
+      if (hostID && hostID !== currentUserID) {
+        nameMap['HOST'] = hostName;
+      }
+
       nameMap[currentUserEmail] = currentUserName;
       setUserNames(nameMap);
     };
 
     loadData();
-  }, [cohosts, eventID, currentUserEmail, currentUserName, currentUserID]);
+    const interval = setInterval(loadData, 1000);
+    return () => clearInterval(interval);
+  }, [cohosts]);
 
   const persistTasksToFirestore = async (newTasks) => {
     const allTasks = [];
@@ -97,10 +112,7 @@ function Tasks() {
     await persistTasksToFirestore(newState);
   };
 
-  const allTaskOwners =
-    'HOST' in userNames
-      ? ['HOST', ...new Set([...cohosts.map(c => c.email), currentUserEmail])]
-      : [...new Set([...cohosts.map(c => c.email), currentUserEmail])];
+  const allTaskOwners = Object.keys(userNames);
 
   return (
     <div className="container">

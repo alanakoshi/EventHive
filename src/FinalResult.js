@@ -1,53 +1,80 @@
-// FinalResult.js
 import { useState, useEffect, useContext } from 'react';
 import { EventContext } from './EventContext';
 import { Link } from 'react-router-dom';
-import { fetchEventByID } from './firebaseHelpers';
+import {
+  fetchEventByID,
+  fetchUserNameByUID
+} from './firebaseHelpers';
 import './Voting.css';
 import './App.css';
 
 function FinalResult() {
   const { eventOptions } = useContext(EventContext);
   const [finalVotes, setFinalVotes] = useState({});
+  const [missingVoters, setMissingVoters] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadVotes = async () => {
+    const loadVotesAndCheck = async () => {
       const eventID = localStorage.getItem('eventID');
       if (!eventID) return;
+
       const eventData = await fetchEventByID(eventID);
-      if (eventData?.votes) {
-        setFinalVotes(eventData.votes);
+      if (!eventData) return;
+
+      const votes = eventData.votes || {};
+      setFinalVotes(votes);
+
+      const hostID = eventData.hostID;
+      const cohosts = eventData.cohosts || [];
+
+      const requiredVoterIDs = [
+        hostID,
+        ...cohosts.map(c => c.userID).filter(Boolean)  // only cohosts with userIDs
+      ];
+
+      const missing = [];
+      for (const uid of requiredVoterIDs) {
+        if (!votes[uid]) {
+          const name = await fetchUserNameByUID(uid);
+          missing.push(name);
+        }
       }
+
+      setMissingVoters(missing);
+      setLoading(false);
     };
-    loadVotes();
+
+    loadVotesAndCheck();
+
+    const interval = setInterval(loadVotesAndCheck, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const getRankedOptions = (category) => {
     const aggregated = {};
-  
-    // Sum up scores across all users
+
     for (const userID in finalVotes) {
       const userVotes = finalVotes[userID];
       const categoryVotes = userVotes[category];
       if (!categoryVotes) continue;
-  
+
       for (const [option, score] of Object.entries(categoryVotes)) {
         aggregated[option] = (aggregated[option] || 0) + score;
       }
     }
-  
+
     if (Object.keys(aggregated).length > 0) {
       return Object.entries(aggregated)
         .sort((a, b) => b[1] - a[1])
         .map(([option, score]) => ({ option, score }));
     }
-  
-    // Fallback if no votes yet
+
     return eventOptions[category]?.map((option, index) => ({
       option,
       score: eventOptions[category].length - index
     })) || [];
-  };  
+  };
 
   return (
     <div className="container">
@@ -79,10 +106,29 @@ function FinalResult() {
         );
       })}
 
+      {!loading && missingVoters.length > 0 && (
+        <div className="alert-popup">
+          Waiting on:
+          <ul>
+            {missingVoters.map((name, idx) => (
+              <li key={idx}>{name}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="next-button-row">
-        <Link to="/tasks" className="next-button">
-          Next
-        </Link>
+        {loading ? (
+          <button className="next-button disabled" disabled>Loading...</button>
+        ) : missingVoters.length === 0 ? (
+          <Link to="/tasks" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+            Next
+          </Link>
+        ) : (
+          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+            Next
+          </button>
+        )}
       </div>
     </div>
   );

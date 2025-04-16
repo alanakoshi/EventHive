@@ -8,56 +8,61 @@ import { auth } from './firebase';
 import { fetchEventByID, saveRankingVoteToFirestore } from './firebaseHelpers';
 
 function Voting() {
-  const { eventOptions, setVotes } = useContext(EventContext);
+  const { eventOptions, setEventOptions, setVotes } = useContext(EventContext);
   const eventID = localStorage.getItem('eventID');
   const userID = auth.currentUser?.uid;
 
   const [rankings, setRankings] = useState({});
 
   useEffect(() => {
-    const loadVotes = async () => {
+    const loadOptionsAndVotes = async () => {
       const eventData = await fetchEventByID(eventID);
+      if (!eventData) return;
 
-      // If user has already voted
-      if (eventData?.votes && eventData.votes[userID]) {
-        const userVotes = eventData.votes[userID];
-        const loadedRankings = {};
+      // Load latest event options
+      setEventOptions({
+        theme: eventData.theme || [],
+        venue: eventData.venue || [],
+        dates: eventData.dates || [],
+      });
 
-        for (const category of Object.keys(userVotes)) {
-          const sortedOptions = Object.entries(userVotes[category])
+      const userVotes = eventData.votes?.[userID] || {};
+      const newRankings = {};
+      const newVotes = {};
+
+      for (const category of ['theme', 'venue', 'dates']) {
+        const currentOptions = eventData[category] || [];
+
+        if (userVotes[category]) {
+          const sorted = Object.entries(userVotes[category])
             .sort((a, b) => b[1] - a[1])
             .map(([option]) => option);
-          loadedRankings[category] = sortedOptions;
-        }
 
-        setRankings(loadedRankings);
-        setVotes(userVotes);
-      } else {
-        // User hasn't voted yet, use eventOptions order and save as vote
-        const freshRankings = {};
-        const newVotes = {};
-
-        for (const category in eventOptions) {
-          const options = [...eventOptions[category]];
-          freshRankings[category] = options;
+          // Ensure it includes any new options
+          const merged = [...new Set([...sorted, ...currentOptions])];
+          newRankings[category] = merged;
 
           const scores = {};
-          options.forEach((option, index) => {
-            scores[option] = options.length - index;
-          });
+          merged.forEach((opt, i) => (scores[opt] = merged.length - i));
+          newVotes[category] = scores;
+        } else {
+          newRankings[category] = [...currentOptions];
+
+          const scores = {};
+          currentOptions.forEach((opt, i) => (scores[opt] = currentOptions.length - i));
           newVotes[category] = scores;
 
-          // Save default vote to Firestore
+          // Save first-time default votes
           await saveRankingVoteToFirestore(eventID, userID, category, scores);
         }
-
-        setRankings(freshRankings);
-        setVotes(newVotes);
       }
+
+      setRankings(newRankings);
+      setVotes(newVotes);
     };
 
-    loadVotes();
-  }, [eventID, userID, eventOptions, setVotes]);
+    loadOptionsAndVotes();
+  }, [eventID, userID, setEventOptions, setVotes]);
 
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
@@ -72,20 +77,13 @@ function Voting() {
       scores[item] = reordered.length - index;
     });
 
-    setRankings((prev) => ({
-      ...prev,
-      [category]: reordered,
-    }));
-
-    setVotes((prev) => ({
-      ...prev,
-      [category]: scores,
-    }));
+    setRankings((prev) => ({ ...prev, [category]: reordered }));
+    setVotes((prev) => ({ ...prev, [category]: scores }));
 
     await saveRankingVoteToFirestore(eventID, userID, category, scores);
   };
 
-  const allCategoriesRanked = Object.keys(eventOptions).every(
+  const allCategoriesRanked = ['theme', 'venue', 'dates'].every(
     (category) => rankings[category] && rankings[category].length > 0
   );
 
@@ -104,16 +102,12 @@ function Voting() {
       </div>
 
       <DragDropContext onDragEnd={handleDragEnd}>
-        {Object.keys(eventOptions).map((category) => (
+        {['theme', 'venue', 'dates'].map((category) => (
           <div key={category} className="category-section">
             <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
             <Droppable droppableId={category}>
               {(provided) => (
-                <div
-                  className="options-list"
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
-                >
+                <div className="options-list" {...provided.droppableProps} ref={provided.innerRef}>
                   {(rankings[category] || []).map((option, index) => (
                     <Draggable key={option} draggableId={option} index={index}>
                       {(provided) => (
@@ -124,7 +118,9 @@ function Voting() {
                           {...provided.dragHandleProps}
                         >
                           <span className="option-rank">{index + 1}.</span>
-                          <span className="option-text">{option}</span>
+                          <span className="option-text">
+                            {typeof option === 'string' ? option : option.name || JSON.stringify(option)}
+                          </span>
                         </div>
                       )}
                     </Draggable>

@@ -1,43 +1,101 @@
-import { useState, useEffect, useContext } from 'react';
-import { EventContext } from './EventContext';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  fetchEventByID,
-  fetchUserNameByUID
-} from './firebaseHelpers';
+import { fetchEventByID, fetchUserNameByUID } from './firebaseHelpers';
 import './Voting.css';
 import './App.css';
 
 function FinalResult() {
-  const { eventOptions } = useContext(EventContext);
+  const [eventOptions, setEventOptions] = useState({});
   const [finalVotes, setFinalVotes] = useState({});
   const [missingVoters, setMissingVoters] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const displayLabel = (option) => {
+    if (typeof option === 'string') return option;
+    if (option?.name) return option.name;
+    if (option?.email) return option.email;
+    return 'Unknown Option';
+  };
+
+  const getAllOptionsInCategory = (category) => {
+    const fromEvent = eventOptions[category] || [];
+    const fromVotes = Object.values(finalVotes)
+      .flatMap(vote => Object.keys(vote?.[category] || {}))
+      .map(o => {
+        try {
+          return JSON.parse(o);
+        } catch {
+          return o;
+        }
+      });
+
+    const combined = [...fromEvent, ...fromVotes];
+    const unique = [];
+    const seen = new Set();
+
+    for (const option of combined) {
+      const key = typeof option === 'string' ? option : JSON.stringify(option);
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(option);
+      }
+    }
+
+    return unique;
+  };
+
+  const getRankedOptions = (category) => {
+    const allOptions = getAllOptionsInCategory(category);
+    const scores = {};
+
+    for (const userID in finalVotes) {
+      const categoryVotes = finalVotes[userID]?.[category] || {};
+      allOptions.forEach(option => {
+        const key = typeof option === 'string' ? option : JSON.stringify(option);
+        scores[key] = (scores[key] || 0) + (categoryVotes[key] || 0);
+      });
+    }
+
+    return Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .map(([rawKey, score]) => {
+        let option;
+        try {
+          option = JSON.parse(rawKey);
+        } catch {
+          option = rawKey;
+        }
+        return { option, score };
+      });
+  };
+
   useEffect(() => {
-    const loadVotesAndCheck = async () => {
+    const loadData = async () => {
       const eventID = localStorage.getItem('eventID');
       if (!eventID) return;
 
-      const eventData = await fetchEventByID(eventID);
-      if (!eventData) return;
+      const event = await fetchEventByID(eventID);
+      if (!event) return;
 
-      const votes = eventData.votes || {};
+      setEventOptions({
+        theme: event.theme || [],
+        venue: event.venue || [],
+        dates: event.dates || []
+      });
+
+      const votes = event.votes || {};
       setFinalVotes(votes);
 
-      const hostID = eventData.hostID;
-      const cohosts = eventData.cohosts || [];
-
-      const requiredVoterIDs = [
-        hostID,
-        ...cohosts.map(c => c.userID).filter(Boolean)  // only cohosts with userIDs
+      const requiredIDs = [
+        event.hostID,
+        ...(event.cohosts || []).map(c => c.userID).filter(Boolean),
       ];
 
       const missing = [];
-      for (const uid of requiredVoterIDs) {
+      for (const uid of requiredIDs) {
         if (!votes[uid]) {
           const name = await fetchUserNameByUID(uid);
-          missing.push(name);
+          missing.push(name || 'Unknown');
         }
       }
 
@@ -45,36 +103,10 @@ function FinalResult() {
       setLoading(false);
     };
 
-    loadVotesAndCheck();
-
-    const interval = setInterval(loadVotesAndCheck, 3000);
+    loadData();
+    const interval = setInterval(loadData, 3000);
     return () => clearInterval(interval);
   }, []);
-
-  const getRankedOptions = (category) => {
-    const aggregated = {};
-
-    for (const userID in finalVotes) {
-      const userVotes = finalVotes[userID];
-      const categoryVotes = userVotes[category];
-      if (!categoryVotes) continue;
-
-      for (const [option, score] of Object.entries(categoryVotes)) {
-        aggregated[option] = (aggregated[option] || 0) + score;
-      }
-    }
-
-    if (Object.keys(aggregated).length > 0) {
-      return Object.entries(aggregated)
-        .sort((a, b) => b[1] - a[1])
-        .map(([option, score]) => ({ option, score }));
-    }
-
-    return eventOptions[category]?.map((option, index) => ({
-      option,
-      score: eventOptions[category].length - index
-    })) || [];
-  };
 
   return (
     <div className="container">
@@ -97,8 +129,8 @@ function FinalResult() {
             <h3>{category.charAt(0).toUpperCase() + category.slice(1)}:</h3>
             <ol className="ranked-list">
               {ranked.map(({ option, score }, index) => (
-                <li key={option} className={index === 0 ? 'top-pick' : ''}>
-                  {option} <span className="score-tag">({score} pts)</span>
+                <li key={index} className={index === 0 ? 'top-pick' : ''}>
+                  {displayLabel(option)} <span className="score-tag">({score} pts)</span>
                 </li>
               ))}
             </ol>
@@ -125,7 +157,7 @@ function FinalResult() {
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666' }}>
             Next
           </button>
         )}

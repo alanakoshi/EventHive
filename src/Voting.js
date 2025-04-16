@@ -1,4 +1,3 @@
-
 import React, { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -34,18 +33,21 @@ function Voting() {
       const newVotes = {};
 
       for (const category of ['theme', 'venue', 'dates']) {
+        const currentOptions = updatedOptions[category];
+
         if (userVotes[category]) {
           const sorted = Object.entries(userVotes[category])
             .sort((a, b) => b[1] - a[1])
             .map(([option]) => option);
 
-          newRankings[category] = sorted;
+          const merged = [...new Set([...sorted, ...currentOptions])];
+          newRankings[category] = merged;
 
           const scores = {};
-          sorted.forEach((opt, i) => (scores[opt] = sorted.length - i));
+          merged.forEach((opt, i) => (scores[opt] = merged.length - i));
           newVotes[category] = scores;
         } else {
-          const defaultOrder = [...updatedOptions[category]];
+          const defaultOrder = [...currentOptions];
           newRankings[category] = defaultOrder;
 
           const scores = {};
@@ -111,7 +113,11 @@ function Voting() {
               {(provided) => (
                 <div className="options-list" {...provided.droppableProps} ref={provided.innerRef}>
                   {(rankings[category] || []).map((option, index) => (
-                    <Draggable key={typeof option === 'string' ? option : JSON.stringify(option)} draggableId={typeof option === 'string' ? option : JSON.stringify(option)} index={index}>
+                    <Draggable
+                      key={typeof option === 'string' ? option : JSON.stringify(option)}
+                      draggableId={typeof option === 'string' ? option : JSON.stringify(option)}
+                      index={index}
+                    >
                       {(provided) => (
                         <div
                           className="option-item"

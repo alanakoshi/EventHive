@@ -13,56 +13,79 @@ function Voting() {
   const userID = auth.currentUser?.uid;
 
   const [rankings, setRankings] = useState({});
+  const [showPopup, setShowPopup] = useState(false);
 
-  useEffect(() => {
-    const loadOptionsAndVotes = async () => {
-      const eventData = await fetchEventByID(eventID);
-      if (!eventData) return;
+  const loadOptionsAndVotes = async (compareOnly = false) => {
+    const eventData = await fetchEventByID(eventID);
+    if (!eventData) return;
 
-      // Load latest event options
-      setEventOptions({
-        theme: eventData.theme || [],
-        venue: eventData.venue || [],
-        dates: eventData.dates || [],
-      });
-
-      const userVotes = eventData.votes?.[userID] || {};
-      const newRankings = {};
-      const newVotes = {};
-
-      for (const category of ['theme', 'venue', 'dates']) {
-        const currentOptions = eventData[category] || [];
-
-        if (userVotes[category]) {
-          const sorted = Object.entries(userVotes[category])
-            .sort((a, b) => b[1] - a[1])
-            .map(([option]) => option);
-
-          // Ensure it includes any new options
-          const merged = [...new Set([...sorted, ...currentOptions])];
-          newRankings[category] = merged;
-
-          const scores = {};
-          merged.forEach((opt, i) => (scores[opt] = merged.length - i));
-          newVotes[category] = scores;
-        } else {
-          newRankings[category] = [...currentOptions];
-
-          const scores = {};
-          currentOptions.forEach((opt, i) => (scores[opt] = currentOptions.length - i));
-          newVotes[category] = scores;
-
-          // Save first-time default votes
-          await saveRankingVoteToFirestore(eventID, userID, category, scores);
-        }
-      }
-
-      setRankings(newRankings);
-      setVotes(newVotes);
+    const newOptions = {
+      theme: eventData.theme || [],
+      venue: eventData.venue || [],
+      dates: eventData.dates || [],
     };
 
+    // Check if new options have been added
+    if (compareOnly) {
+      let newAdded = false;
+      for (const category of ['theme', 'venue', 'dates']) {
+        const currentSet = new Set(eventOptions[category]?.map(opt => JSON.stringify(opt)));
+        const latestSet = new Set(newOptions[category]?.map(opt => JSON.stringify(opt)));
+        if (latestSet.size > currentSet.size) {
+          for (const item of latestSet) {
+            if (!currentSet.has(item)) {
+              newAdded = true;
+              break;
+            }
+          }
+        }
+      }
+      if (newAdded) {
+        setShowPopup(true);
+        setTimeout(() => setShowPopup(false), 3000);
+      }
+    }
+
+    setEventOptions(newOptions);
+
+    const userVotes = eventData.votes?.[userID] || {};
+    const newRankings = {};
+    const newVotes = {};
+
+    for (const category of ['theme', 'venue', 'dates']) {
+      const currentOptions = eventData[category] || [];
+
+      if (userVotes[category]) {
+        const sorted = Object.entries(userVotes[category])
+          .sort((a, b) => b[1] - a[1])
+          .map(([option]) => option);
+
+        const merged = [...new Set([...sorted, ...currentOptions])];
+        newRankings[category] = merged;
+
+        const scores = {};
+        merged.forEach((opt, i) => (scores[opt] = merged.length - i));
+        newVotes[category] = scores;
+      } else {
+        newRankings[category] = [...currentOptions];
+        const scores = {};
+        currentOptions.forEach((opt, i) => (scores[opt] = currentOptions.length - i));
+        newVotes[category] = scores;
+
+        await saveRankingVoteToFirestore(eventID, userID, category, scores);
+      }
+    }
+
+    setRankings(newRankings);
+    setVotes(newVotes);
+  };
+
+  useEffect(() => {
     loadOptionsAndVotes();
-  }, [eventID, userID, setEventOptions, setVotes]);
+
+    const interval = setInterval(() => loadOptionsAndVotes(true), 1000);
+    return () => clearInterval(interval);
+  }, [eventID, userID]);
 
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
@@ -100,6 +123,12 @@ function Voting() {
         </Link>
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Voting</h1>
       </div>
+
+      {showPopup && (
+        <div className="popup-banner">
+          A new option has been added!
+        </div>
+      )}
 
       <DragDropContext onDragEnd={handleDragEnd}>
         {['theme', 'venue', 'dates'].map((category) => (

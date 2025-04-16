@@ -1,3 +1,4 @@
+
 import React, { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -21,7 +22,6 @@ function Voting() {
       const eventData = await fetchEventByID(eventID);
       if (!eventData) return;
 
-      // Update event options globally
       const updatedOptions = {
         theme: eventData.theme || [],
         venue: eventData.venue || [],
@@ -34,24 +34,22 @@ function Voting() {
       const newVotes = {};
 
       for (const category of ['theme', 'venue', 'dates']) {
-        const currentOptions = updatedOptions[category];
-
         if (userVotes[category]) {
           const sorted = Object.entries(userVotes[category])
             .sort((a, b) => b[1] - a[1])
             .map(([option]) => option);
 
-          const merged = [...new Set([...sorted, ...currentOptions])];
-          newRankings[category] = merged;
+          newRankings[category] = sorted;
 
           const scores = {};
-          merged.forEach((opt, i) => (scores[opt] = merged.length - i));
+          sorted.forEach((opt, i) => (scores[opt] = sorted.length - i));
           newVotes[category] = scores;
         } else {
-          newRankings[category] = [...currentOptions];
+          const defaultOrder = [...updatedOptions[category]];
+          newRankings[category] = defaultOrder;
 
           const scores = {};
-          currentOptions.forEach((opt, i) => (scores[opt] = currentOptions.length - i));
+          defaultOrder.forEach((opt, i) => (scores[opt] = defaultOrder.length - i));
           newVotes[category] = scores;
 
           await saveRankingVoteToFirestore(eventID, userID, category, scores);
@@ -63,7 +61,7 @@ function Voting() {
     };
 
     loadOptionsAndVotes();
-    interval = setInterval(loadOptionsAndVotes, 1000); // refresh every 1 seconds
+    interval = setInterval(loadOptionsAndVotes, 1000);
 
     return () => clearInterval(interval);
   }, [eventID, userID, setEventOptions, setVotes]);

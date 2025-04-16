@@ -13,79 +13,60 @@ function Voting() {
   const userID = auth.currentUser?.uid;
 
   const [rankings, setRankings] = useState({});
-  const [showPopup, setShowPopup] = useState(false);
-
-  const loadOptionsAndVotes = async (compareOnly = false) => {
-    const eventData = await fetchEventByID(eventID);
-    if (!eventData) return;
-
-    const newOptions = {
-      theme: eventData.theme || [],
-      venue: eventData.venue || [],
-      dates: eventData.dates || [],
-    };
-
-    // Check if new options have been added
-    if (compareOnly) {
-      let newAdded = false;
-      for (const category of ['theme', 'venue', 'dates']) {
-        const currentSet = new Set(eventOptions[category]?.map(opt => JSON.stringify(opt)));
-        const latestSet = new Set(newOptions[category]?.map(opt => JSON.stringify(opt)));
-        if (latestSet.size > currentSet.size) {
-          for (const item of latestSet) {
-            if (!currentSet.has(item)) {
-              newAdded = true;
-              break;
-            }
-          }
-        }
-      }
-      if (newAdded) {
-        setShowPopup(true);
-        setTimeout(() => setShowPopup(false), 3000);
-      }
-    }
-
-    setEventOptions(newOptions);
-
-    const userVotes = eventData.votes?.[userID] || {};
-    const newRankings = {};
-    const newVotes = {};
-
-    for (const category of ['theme', 'venue', 'dates']) {
-      const currentOptions = eventData[category] || [];
-
-      if (userVotes[category]) {
-        const sorted = Object.entries(userVotes[category])
-          .sort((a, b) => b[1] - a[1])
-          .map(([option]) => option);
-
-        const merged = [...new Set([...sorted, ...currentOptions])];
-        newRankings[category] = merged;
-
-        const scores = {};
-        merged.forEach((opt, i) => (scores[opt] = merged.length - i));
-        newVotes[category] = scores;
-      } else {
-        newRankings[category] = [...currentOptions];
-        const scores = {};
-        currentOptions.forEach((opt, i) => (scores[opt] = currentOptions.length - i));
-        newVotes[category] = scores;
-
-        await saveRankingVoteToFirestore(eventID, userID, category, scores);
-      }
-    }
-
-    setRankings(newRankings);
-    setVotes(newVotes);
-  };
 
   useEffect(() => {
-    loadOptionsAndVotes();
+    let interval;
 
-    const interval = setInterval(() => loadOptionsAndVotes(true), 1000);
+    const loadOptionsAndVotes = async () => {
+      const eventData = await fetchEventByID(eventID);
+      if (!eventData) return;
+
+      // Update event options globally
+      const updatedOptions = {
+        theme: eventData.theme || [],
+        venue: eventData.venue || [],
+        dates: eventData.dates || [],
+      };
+      setEventOptions(updatedOptions);
+
+      const userVotes = eventData.votes?.[userID] || {};
+      const newRankings = {};
+      const newVotes = {};
+
+      for (const category of ['theme', 'venue', 'dates']) {
+        const currentOptions = updatedOptions[category];
+
+        if (userVotes[category]) {
+          const sorted = Object.entries(userVotes[category])
+            .sort((a, b) => b[1] - a[1])
+            .map(([option]) => option);
+
+          const merged = [...new Set([...sorted, ...currentOptions])];
+          newRankings[category] = merged;
+
+          const scores = {};
+          merged.forEach((opt, i) => (scores[opt] = merged.length - i));
+          newVotes[category] = scores;
+        } else {
+          newRankings[category] = [...currentOptions];
+
+          const scores = {};
+          currentOptions.forEach((opt, i) => (scores[opt] = currentOptions.length - i));
+          newVotes[category] = scores;
+
+          await saveRankingVoteToFirestore(eventID, userID, category, scores);
+        }
+      }
+
+      setRankings(newRankings);
+      setVotes(newVotes);
+    };
+
+    loadOptionsAndVotes();
+    interval = setInterval(loadOptionsAndVotes, 1000); // refresh every 1 seconds
+
     return () => clearInterval(interval);
-  }, [eventID, userID]);
+  }, [eventID, userID, setEventOptions, setVotes]);
 
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
@@ -124,12 +105,6 @@ function Voting() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Voting</h1>
       </div>
 
-      {showPopup && (
-        <div className="popup-banner">
-          A new option has been added!
-        </div>
-      )}
-
       <DragDropContext onDragEnd={handleDragEnd}>
         {['theme', 'venue', 'dates'].map((category) => (
           <div key={category} className="category-section">
@@ -138,7 +113,7 @@ function Voting() {
               {(provided) => (
                 <div className="options-list" {...provided.droppableProps} ref={provided.innerRef}>
                   {(rankings[category] || []).map((option, index) => (
-                    <Draggable key={option} draggableId={option} index={index}>
+                    <Draggable key={typeof option === 'string' ? option : JSON.stringify(option)} draggableId={typeof option === 'string' ? option : JSON.stringify(option)} index={index}>
                       {(provided) => (
                         <div
                           className="option-item"

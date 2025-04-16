@@ -6,6 +6,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  deleteDoc,
   getDocs,
   getDoc,
   query,
@@ -56,9 +57,8 @@ export const addCohostToFirestore = async (eventID, name, email, role = 'cohost'
 
     const existingCohosts = await getDocs(cohostQuery);
 
-    // If already exists, don't add again
     if (!existingCohosts.empty) {
-      console.log('Cohost already exists, skipping Firestore add.');
+      console.log('Cohost already exists.');
       return;
     }
 
@@ -70,9 +70,9 @@ export const addCohostToFirestore = async (eventID, name, email, role = 'cohost'
       addedAt: serverTimestampFn(),
     });
 
-    console.log('Cohost successfully added!');
+    console.log('Cohost document added to Firestore.');
   } catch (error) {
-    console.error('Error adding cohost:', error);
+    console.error('Error adding cohost to Firestore:', error);
   }
 };
 
@@ -227,3 +227,19 @@ export const saveRankingVoteToFirestore = async (eventID, userID, category, scor
   }
 };
 
+export const deleteCohostFromFirestore = async (eventID, email) => {
+  try {
+    const q = query(
+      collection(db, 'cohosts'),
+      where('eventID', '==', eventID),
+      where('email', '==', email)
+    );
+    const snapshot = await getDocs(q);
+    for (const docSnap of snapshot.docs) {
+      await deleteDoc(doc(db, 'cohosts', docSnap.id));
+    }
+    console.log(`Cohost with email ${email} removed from collection`);
+  } catch (error) {
+    console.error('Error removing cohost:', error);
+  }
+};

@@ -13,27 +13,29 @@ function SelectDate() {
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
   useEffect(() => {
+    const eventID = localStorage.getItem("eventID");
+  
     const loadDates = async () => {
-      const eventID = localStorage.getItem("eventID");
       const continuePlanning = localStorage.getItem("continuePlanning") === "true";
-
+  
       if (!eventID) return;
-
+  
       if (continuePlanning) {
         const data = await fetchEventByID(eventID);
         if (data?.dates) {
           setEventOptions(prev => ({ ...prev, dates: data.dates }));
           localStorage.setItem("dates", JSON.stringify(data.dates));
         }
-      } else {
-        const savedDates = JSON.parse(localStorage.getItem("dates")) || [];
-        setEventOptions(prev => ({ ...prev, dates: savedDates }));
       }
     };
-
-    loadDates();
+  
+    loadDates(); // load once on mount
+  
+    const interval = setInterval(loadDates, 1000); // refresh every 1s
+  
+    return () => clearInterval(interval); // cleanup
   }, [setEventOptions]);
-
+  
   const toLocalDateString = (date) => {
     const year = date.getFullYear();
     const month = ('0' + (date.getMonth() + 1)).slice(-2);
@@ -41,21 +43,25 @@ function SelectDate() {
     return `${year}-${month}-${day}`;
   };
 
-  const toggleDate = (day) => {
+  const toggleDate = async (day) => {
     if (!day) return;
     const clickedDate = new Date(currentYear, currentMonth, day);
     const isoString = toLocalDateString(clickedDate);
-
+    const eventID = localStorage.getItem("eventID");
+  
     let updatedDates;
     if (selectedDates.includes(isoString)) {
       updatedDates = selectedDates.filter(d => d !== isoString);
     } else {
       updatedDates = [...selectedDates, isoString];
     }
-
+  
     setEventOptions(prev => ({ ...prev, dates: updatedDates }));
     localStorage.setItem("dates", JSON.stringify(updatedDates));
-  };
+  
+    // 🔥 Immediately update Firestore
+    await updateEventInFirestore(eventID, { dates: updatedDates });
+  };  
 
   const handleNext = async () => {
     const eventID = localStorage.getItem("eventID");

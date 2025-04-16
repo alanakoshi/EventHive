@@ -1,4 +1,3 @@
-// Home.js
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import MenuSidebar from './components/MenuSideBar';
@@ -11,15 +10,22 @@ function Home() {
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
 
+  const loadUserEvents = async () => {
+    const user = auth.currentUser;
+    if (user) {
+      const userEvents = await fetchUserEvents(user.uid, user.email);
+      setEvents(userEvents);
+    }
+  };
+
   useEffect(() => {
-    const fetchEvents = async () => {
-      const user = auth.currentUser;
-      if (user) {
-        const userEvents = await fetchUserEvents(user.uid, user.email);
-        setEvents(userEvents);
-      }
-    };
-    fetchEvents();
+    loadUserEvents();
+
+    const interval = setInterval(() => {
+      loadUserEvents();
+    }, 1000); // refresh every 1 seconds
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleNewEvent = () => {

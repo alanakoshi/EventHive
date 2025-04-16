@@ -19,27 +19,22 @@ function InviteCohost() {
   const [successMessage, setSuccessMessage] = useState("");
 
   useEffect(() => {
-    const loadCohosts = async () => {
-      const eventID = localStorage.getItem("eventID");
-      const continuePlanning = localStorage.getItem("continuePlanning") === "true";
+    const eventID = localStorage.getItem("eventID");
 
-      if (continuePlanning) {
-        const event = await fetchEventByID(eventID);
-        if (event?.cohosts) {
-          setCohosts(event.cohosts);
-          localStorage.setItem("cohosts", JSON.stringify(event.cohosts));
-        }
-        if (event?.hostID === auth.currentUser?.uid) {
-          setIsHost(true);
-        }
-      } else {
-        const savedCohosts = JSON.parse(localStorage.getItem("cohosts")) || [];
-        setCohosts(savedCohosts);
+    const loadCohosts = async () => {
+      const event = await fetchEventByID(eventID);
+      if (event?.cohosts) {
+        setCohosts(event.cohosts);
+        localStorage.setItem("cohosts", JSON.stringify(event.cohosts));
+      }
+      if (event?.hostID === auth.currentUser?.uid) {
         setIsHost(true);
       }
     };
 
     loadCohosts();
+    const interval = setInterval(loadCohosts, 3000); // auto-refresh every 3s
+    return () => clearInterval(interval);
   }, [setCohosts]);
 
   const handleAddCohost = () => {
@@ -52,7 +47,6 @@ function InviteCohost() {
     const newCohosts = [...cohosts, { name: cohostName, email: cohostEmail }];
     setCohosts(newCohosts);
     localStorage.setItem("cohosts", JSON.stringify(newCohosts));
-
     setCohostName("");
     setCohostEmail("");
   };
@@ -79,18 +73,14 @@ function InviteCohost() {
   const tryAddCohost = () => {
     const trimmedName = cohostName.trim();
     const trimmedEmail = cohostEmail.trim();
-  
-    if (trimmedName === "" || trimmedEmail === "") {
-      return;
-    }
-  
+    if (trimmedName === "" || trimmedEmail === "") return;
+
     const newCohosts = [...cohosts, { name: trimmedName, email: trimmedEmail }];
     setCohosts(newCohosts);
     localStorage.setItem("cohosts", JSON.stringify(newCohosts));
-  
     setCohostName("");
     setCohostEmail("");
-  };  
+  };
 
   return (
     <div className="container">
@@ -131,15 +121,12 @@ function InviteCohost() {
         </div>
       )}
 
-
       <div className='cohost-list'>
         {cohosts.map((cohost, index) => (
           <div key={index} className="cohost-name-box">
             {cohost.name} ({cohost.email})
             {isHost && (
-              <button className="remove-button" onClick={() => removeCohost(index)}>
-                ✕
-              </button>
+              <button className="remove-button" onClick={() => removeCohost(index)}>✕</button>
             )}
           </div>
         ))}

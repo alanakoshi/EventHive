@@ -1,17 +1,17 @@
 {
   "files": {
     "main.css": "/EventHive/static/css/main.9958e080.css",
-    "main.js": "/EventHive/static/js/main.51cc9cc8.js",
+    "main.js": "/EventHive/static/js/main.5595c887.js",
     "static/js/453.ed3810f9.chunk.js": "/EventHive/static/js/453.ed3810f9.chunk.js",
     "static/media/bootstrap-icons.woff?": "/EventHive/static/media/bootstrap-icons.39795c0b4513de014cf8.woff",
     "static/media/bootstrap-icons.woff2?": "/EventHive/static/media/bootstrap-icons.b7bcc075b395c14ce8c2.woff2",
     "index.html": "/EventHive/index.html",
     "main.9958e080.css.map": "/EventHive/static/css/main.9958e080.css.map",
-    "main.51cc9cc8.js.map": "/EventHive/static/js/main.51cc9cc8.js.map",
+    "main.5595c887.js.map": "/EventHive/static/js/main.5595c887.js.map",
     "453.ed3810f9.chunk.js.map": "/EventHive/static/js/453.ed3810f9.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.9958e080.css",
-    "static/js/main.51cc9cc8.js"
+    "static/js/main.5595c887.js"
   ]
 }

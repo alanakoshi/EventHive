@@ -8,7 +8,6 @@ import InviteCohost from "./InviteCohost";
 import Date from "./Date";
 import Theme from "./Theme";
 import Venue from "./Venue";
-import Wait from "./Wait";
 import Voting from "./Voting";
 import FinalResult from "./FinalResult";
 import Tasks from "./Tasks";
@@ -30,7 +29,6 @@ function App() {
             <Route path="/date" element={<Date />} />
             <Route path="/theme" element={<Theme />} />
             <Route path="/venue" element={<Venue />} />
-            <Route path="/wait" element={<Wait />} />
             <Route path="/voting" element={<Voting />} />
             <Route path="/final-result" element={<FinalResult />} />
             <Route path="/tasks" element={<Tasks />} />

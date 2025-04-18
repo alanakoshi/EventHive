@@ -145,7 +145,7 @@ function Venue() {
 
       <div className="next-button-row">
         {eventOptions.venue?.length > 0 ? (
-          <Link to="/voting" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/wait" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>
         ) : (

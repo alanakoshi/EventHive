@@ -14,7 +14,6 @@ import {
   arrayUnion
 } from 'firebase/firestore';
 
-// Add User
 export const addUserToFirestore = async (uid, name, email) => {
   try {
     await setDoc(doc(db, 'users', uid), {
@@ -30,7 +29,6 @@ export const addUserToFirestore = async (uid, name, email) => {
   }
 };
 
-// Add Event
 export const addEventToFirestore = async (hostID, name, date, location) => {
   try {
     const eventRef = await addDoc(collection(db, 'events'), {
@@ -46,7 +44,6 @@ export const addEventToFirestore = async (hostID, name, date, location) => {
   }
 };
 
-// Add Cohost
 export const addCohostToFirestore = async (eventID, name, email, role = 'cohost') => {
   try {
     const cohostQuery = query(
@@ -76,7 +73,17 @@ export const addCohostToFirestore = async (eventID, name, email, role = 'cohost'
   }
 };
 
-// Add Vote
+export const fetchCohostsForEvent = async (eventID) => {
+  try {
+    const q = query(collection(db, 'cohosts'), where('eventID', '==', eventID));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => doc.data());
+  } catch (error) {
+    console.error('Error fetching cohosts:', error);
+    return [];
+  }
+};
+
 export const addVoteToFirestore = async (eventID, userID, category, scores) => {
   try {
     const eventRef = doc(db, 'events', eventID);
@@ -94,7 +101,7 @@ export const addVoteToFirestore = async (eventID, userID, category, scores) => {
 
     await updateDoc(eventRef, {
       votes: updatedVotes,
-      lastVoteAt: serverTimestampFn(), // Optional: track timestamp of latest vote
+      lastVoteAt: serverTimestampFn(),
     });
 
     console.log('Vote successfully saved!');
@@ -103,7 +110,6 @@ export const addVoteToFirestore = async (eventID, userID, category, scores) => {
   }
 };
 
-// Add Task
 export const addTaskToFirestore = async (eventID, cohostName, text) => {
   try {
     const task = {
@@ -122,13 +128,11 @@ export const addTaskToFirestore = async (eventID, cohostName, text) => {
   }
 };
 
-// Update Event
 export const updateEventInFirestore = async (eventID, data) => {
   const eventDocRef = doc(db, 'events', eventID);
   await updateDoc(eventDocRef, data);
 };
 
-// Fetch Events
 export const fetchUserEvents = async (uid, email) => {
   const hostEventsQuery = query(collection(db, 'events'), where('hostID', '==', uid));
   const hostSnapshot = await getDocs(hostEventsQuery);
@@ -148,7 +152,6 @@ export const fetchUserEvents = async (uid, email) => {
   return [...hostEvents, ...cohostEvents];
 };
 
-// Fetch Tasks
 export const fetchTasksForEvent = async (eventID) => {
   const eventDocRef = doc(db, 'events', eventID);
   const eventSnap = await getDoc(eventDocRef);
@@ -158,7 +161,6 @@ export const fetchTasksForEvent = async (eventID) => {
   return [];
 };
 
-// Fetch Event by ID
 export const fetchEventByID = async (eventID) => {
   const eventDocRef = doc(db, 'events', eventID);
   const eventSnap = await getDoc(eventDocRef);
@@ -168,7 +170,6 @@ export const fetchEventByID = async (eventID) => {
   return null;
 };
 
-// Fetch Username by Email
 export const fetchUserNameByEmail = async (email) => {
   const q = query(collection(db, 'users'), where('email', '==', email));
   const snapshot = await getDocs(q);
@@ -178,7 +179,6 @@ export const fetchUserNameByEmail = async (email) => {
   return email;
 };
 
-// Fetch Username by UID
 export const fetchUserNameByUID = async (uid) => {
   const userRef = doc(db, 'users', uid);
   const userSnap = await getDoc(userRef);
@@ -188,14 +188,12 @@ export const fetchUserNameByUID = async (uid) => {
   return uid;
 };
 
-// Fetch all votes for an event
 export const fetchVotesForEvent = async (eventID) => {
   const q = query(collection(db, 'votes'), where('eventID', '==', eventID));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => doc.data());
 };
 
-// Save Ranking Vote to Firestore
 export const saveRankingVoteToFirestore = async (eventID, userID, category, scores) => {
   try {
     const eventDocRef = doc(db, 'events', eventID);
@@ -212,13 +210,13 @@ export const saveRankingVoteToFirestore = async (eventID, userID, category, scor
       ...existingVotes,
       [userID]: {
         ...(existingVotes[userID] || {}),
-        [category]: scores, // Update just this category for this user
+        [category]: scores,
       },
     };
 
     await updateDoc(eventDocRef, {
       votes: updatedVotes,
-      lastVoteAt: serverTimestampFn(), // Optional tracking of vote time
+      lastVoteAt: serverTimestampFn(),
     });
 
     console.log('Ranking vote successfully saved!');

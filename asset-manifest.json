@@ -1,17 +1,17 @@
 {
   "files": {
-    "main.css": "/EventHive/static/css/main.f6be9c3d.css",
-    "main.js": "/EventHive/static/js/main.20954996.js",
+    "main.css": "/EventHive/static/css/main.1e22d947.css",
+    "main.js": "/EventHive/static/js/main.115d05a6.js",
     "static/js/453.ed3810f9.chunk.js": "/EventHive/static/js/453.ed3810f9.chunk.js",
     "static/media/bootstrap-icons.woff?": "/EventHive/static/media/bootstrap-icons.39795c0b4513de014cf8.woff",
     "static/media/bootstrap-icons.woff2?": "/EventHive/static/media/bootstrap-icons.b7bcc075b395c14ce8c2.woff2",
     "index.html": "/EventHive/index.html",
-    "main.f6be9c3d.css.map": "/EventHive/static/css/main.f6be9c3d.css.map",
-    "main.20954996.js.map": "/EventHive/static/js/main.20954996.js.map",
+    "main.1e22d947.css.map": "/EventHive/static/css/main.1e22d947.css.map",
+    "main.115d05a6.js.map": "/EventHive/static/js/main.115d05a6.js.map",
     "453.ed3810f9.chunk.js.map": "/EventHive/static/js/453.ed3810f9.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.f6be9c3d.css",
-    "static/js/main.20954996.js"
+    "static/css/main.1e22d947.css",
+    "static/js/main.115d05a6.js"
   ]
 }

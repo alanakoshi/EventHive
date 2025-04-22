@@ -118,7 +118,6 @@ function Home() {
               </div>
               <div className="event-info-box">
                 <div className="event-name">{event.name}</div>
-                <div className="event-time">8:30 pm – 12:00 am</div>
                 <div className="event-location">
                   <img src={process.env.PUBLIC_URL + '/location.svg'} style={{ marginRight: '6px' }} />
                   {event.topVenue || 'TBD'}

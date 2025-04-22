@@ -32,6 +32,11 @@
     justify-content: space-between;
 }
 
+/* Highlight the first option in each final‐ranking list */
+.option-item.top-pick {
+  background-color: #fff3b0;
+}
+
 .option-item:active {
     background-color: #f0f8ff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -61,12 +66,6 @@
     cursor: pointer;
 }
 
-/* Next button row should remain at bottom as defined previously */
-.next-button-row {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-}
 
 .option-rank {
     font-weight: bold;

@@ -30,13 +30,15 @@ h1 {
 }
 
 .logo-icon.small-top-right {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   margin-left: auto;
+  align-self: flex-start;
+  margin-top: -6px;
 }
 
 .homepage-title {
-  font-size: 28px;
+  font-size: 36px;
   font-weight: bold;
   line-height: 1.2;
   margin: 0;
@@ -238,12 +240,14 @@ h1 {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 16px 0;
+  margin-bottom: 16px;
+  margin-top: 6px;
 }
 .sort-label {
   font-weight: 500;
   color: #333;
   white-space: nowrap;
+  margin-top: 16px; 
 }
 .sort-btn {
   padding: 6px 14px;

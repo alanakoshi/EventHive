@@ -97,7 +97,7 @@ function Complete() {
       </div>
 
       <div className="next-button-row">
-        <Link to="/home" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+        <Link to="/home" className="next-button active">
           Home
         </Link>
       </div>

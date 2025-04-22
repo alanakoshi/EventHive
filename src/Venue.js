@@ -88,9 +88,9 @@ function Venue() {
     <div className="container">
       <div className="progress-wrapper">
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: '50%' }} />
+          <div className="progress-bar" style={{ width: '40%' }} />
         </div>
-        <div className="progress-percentage">50%</div>
+        <div className="progress-percentage">40%</div>
       </div>
 
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
@@ -151,11 +151,11 @@ function Venue() {
 
       <div className="next-button-row">
         {eventOptions.venue?.length > 0 ? (
-          <Link to="/voting" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/voting" onClick={handleNext} className="next-button active">
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+          <button className="next-button disabled" disabled>
             Next
           </button>
         )}

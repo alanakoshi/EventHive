@@ -171,7 +171,7 @@ export default function Voting() {
 
       <div className="next-button-row">
         {allRanked
-          ? <Link to="/final-result" className="next-button active" style={{ backgroundColor:'#ffcf34', color:'#000' }}>
+          ? <Link to="/final-result" className="next-button active">
               Next
             </Link>
           : <button className="next-button disabled" disabled>Next</button>

@@ -122,8 +122,8 @@ function Home() {
       </div>
 
       {/* SORT‑BY CONTROLS */}
+      <div className="sort-label">Sort By</div>
       <div className="sort-by-row">
-        <span className="sort-label">Sort By</span>
         {['All','Month','Day','Year'].map(key => (
           <button
             key={key}

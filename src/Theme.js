@@ -160,11 +160,11 @@ function Theme() {
 
       <div className="next-button-row">
         {eventOptions.theme?.length > 0 ? (
-          <Link to="/venue" onClick={handleNext} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/venue" onClick={handleNext} className="next-button active">
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+          <button className="next-button disabled" disabled>
             Next
           </button>
         )}

@@ -137,13 +137,22 @@ function FinalResult() {
       {['theme','venue','dates'].map(cat => (
         <div key={cat} className="category-section">
           <h3>{cat.charAt(0).toUpperCase() + cat.slice(1)}</h3>
-          <ol className="ranked-list">
-            {getRanked(cat).map(({ option, score }, i) => (
-              <li key={i} className={i===0 ? 'top-pick' : ''}>
-                {displayLabel(option)} <span className="score-tag">({score} pts)</span>
-              </li>
-            ))}
-          </ol>
+
+          <div className="options-list">
+          {getRanked(cat).map(({ option, score }, i) => {
+            const id = typeof option === 'string' ? option : JSON.stringify(option);
+            return (
+              <div 
+                key={id} 
+                className={`option-item${i === 0 ? ' top-pick' : ''}`}
+              >
+                <span className="option-rank">{i + 1}.</span>
+                <span className="option-text">{displayLabel(option)}</span>
+                <span className="score-tag">({score} pts)</span>
+              </div>
+            );
+          })}
+          </div>
         </div>
       ))}
 
@@ -152,13 +161,11 @@ function FinalResult() {
           <button className="next-button disabled" disabled>Loading...</button>
         ) : missingVoters.length === 0 ? (
           <Link to="/tasks"
-                className="next-button active"
-                style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+                className="next-button active">
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled
-                  style={{ backgroundColor: '#ccc', color: '#666' }}>
+          <button className="next-button disabled" disabled>
             Waiting on {missingVoters.join(', ')}
           </button>
         )}

@@ -25,22 +25,6 @@ function SelectDate() {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
 
-  // pick a pastel palette once per session
-  const pastelColors = [
-    '#ffd1dc','#ffecd1','#c1f0f6','#e0bbf9',
-    '#d0f0c0','#fdfd96','#aec6cf','#fbc4ab',
-    '#caffbf','#a0c4ff'
-  ];
-  // stable order: host (you) first, then cohosts by index
-  const getColorByEmail = (email) => {
-    const allEmails = [currentEmail, ...cohosts.map(c => c.email)]
-      .filter((e, i, a) => a.indexOf(e) === i);
-    const idx = allEmails.indexOf(email);
-    return pastelColors[idx % pastelColors.length];
-  };
-  // your color:
-  const yourColor = getColorByEmail(currentEmail);
-
   useEffect(() => {
     const eventID = localStorage.getItem('eventID');
     const load = async () => {
@@ -62,8 +46,8 @@ function SelectDate() {
 
   const toIso = date => {
     const y = date.getFullYear();
-    const m = String(date.getMonth()+1).padStart(2,'0');
-    const d = String(date.getDate()).padStart(2,'0');
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${d}`;
   };
 
@@ -100,25 +84,26 @@ function SelectDate() {
     setCurrentMonth(m); setCurrentYear(y);
   };
 
-  // Build grid
-  const daysInMonth = new Date(currentYear,currentMonth+1,0).getDate();
-  const firstDow = new Date(currentYear,currentMonth,1).getDay();
+  // Build calendar grid
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+  const firstDow    = new Date(currentYear, currentMonth, 1).getDay();
   const cells = [];
-  for (let i=0;i<firstDow;i++) cells.push(null);
-  for (let d=1;d<=daysInMonth;d++) cells.push(d);
+  for (let i = 0; i < firstDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   const dayNames = ['S','M','T','W','T','F','S'];
-  const yourDates = new Set(selectedDates[currentEmail]||[]);
+  const yourDates = new Set(selectedDates[currentEmail] || []);
   const formatted = Array.from(yourDates).sort().map(iso => {
     const [y,m,d] = iso.split('-');
-    return new Date(y,m-1,d)
-      .toLocaleDateString('en-US',{month:'long',day:'numeric'});
+    return new Date(y, m-1, d)
+      .toLocaleDateString('en-US',{ month:'long', day:'numeric' });
   });
 
   const todayIso = toIso(new Date());
 
   return (
     <div className="container">
+      {/* Progress Bar */}
       <div className="progress-wrapper">
         <div className="progress-container">
           <div className="progress-bar" style={{ width: '30%' }} />
@@ -126,8 +111,10 @@ function SelectDate() {
         <div className="progress-percentage">30%</div>
       </div>
 
+      {/* Header */}
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
-        <Link to="/invite-cohost" className="btn back-btn rounded-circle shadow-sm back-icon">
+        <Link to="/invite-cohost"
+              className="btn back-btn rounded-circle shadow-sm back-icon">
           <i className="bi bi-arrow-left-short"></i>
         </Link>
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">
@@ -139,48 +126,63 @@ function SelectDate() {
         Select all dates you’re available for the event.
       </div>
 
+      {/* Calendar Navigation */}
       <div className="calendar-header">
-        <button className="calendar-arrow" onClick={prevMonth}>&lt;</button>
+        <button
+          className="btn back-btn rounded-circle shadow-sm calendar-arrow back-icon"
+          onClick={prevMonth}
+        >
+          <i className="bi bi-chevron-left"></i>
+        </button>
+
         <div className="calendar-month-year">
           {[
             'January','February','March','April','May','June',
             'July','August','September','October','November','December'
           ][currentMonth]} {currentYear}
         </div>
-        <button className="calendar-arrow" onClick={nextMonth}>&gt;</button>
+
+        <button
+          className="btn back-btn rounded-circle shadow-sm calendar-arrow back-icon"
+          onClick={nextMonth}
+        >
+          <i className="bi bi-chevron-right"></i>
+        </button>
       </div>
 
+
+      {/* Day Labels */}
       <div className="calendar-grid day-labels">
-        {dayNames.map((dn,i)=> <div key={i} className="day-label">{dn}</div> )}
+        {dayNames.map((dn,i) => (
+          <div key={i} className="day-label">{dn}</div>
+        ))}
       </div>
 
+      {/* Day Cells */}
       <div className="calendar-grid day-cells">
         {cells.map((day,i) => {
-          if (day===null) return <div key={i} className="calendar-day blank"/>;
-          const iso = toIso(new Date(currentYear,currentMonth,day));
-          const isToday = iso===todayIso;
+          if (day === null) return <div key={i} className="calendar-day blank"/>;
+          const iso = toIso(new Date(currentYear, currentMonth, day));
+          const isToday    = iso === todayIso;
           const isSelected = yourDates.has(iso);
-
-          // inline style to color YOUR picks
-          const style = isSelected
-            ? { backgroundColor: yourColor, color:'#000' }
-            : {};
 
           return (
             <div
               key={i}
-              className={`calendar-day ${isToday?'today':''}`}
-              onClick={()=>toggleDate(day)}
-              style={{position:'relative', ...style}}
+              className={
+                `calendar-day` +
+                (isToday ? ' today' : '') +
+                (isSelected ? ' selected' : '')
+              }
+              onClick={() => toggleDate(day)}
             >
-              <span className="calendar-day-number">
-                {day}
-              </span>
+              <span className="calendar-day-number">{day}</span>
             </div>
           );
         })}
       </div>
 
+      {/* Selected Dates Display */}
       <div className="selected-dates">
         <h3>Selected Dates:</h3>
         <div>
@@ -190,22 +192,16 @@ function SelectDate() {
         </div>
       </div>
 
+      {/* Next Button */}
       <div className="next-button-row">
         {formatted.length > 0 ? (
-          <Link
-            to="/theme"
-            className="next-button active"
-            style={{ backgroundColor:'#ffcf34',color:'#000' }}
-            onClick={handleNext}
-          >
+          <Link to="/theme"
+                className="next-button active"
+                onClick={handleNext}>
             Next
           </Link>
         ) : (
-          <button
-            className="next-button disabled"
-            disabled
-            style={{ backgroundColor:'#ccc',color:'#666',cursor:'not-allowed'}}
-          >
+          <button className="next-button disabled" disabled>
             Next
           </button>
         )}

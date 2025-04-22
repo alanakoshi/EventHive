@@ -146,7 +146,7 @@ function InviteCohost() {
           <div className='event-block'>
             <input
               type="text"
-              placeholder="Cohost Name"
+              placeholder="Name"
               value={cohostName}
               onChange={(e) => setCohostName(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && tryAddCohost()}
@@ -155,7 +155,7 @@ function InviteCohost() {
             />
             <input
               type="email"
-              placeholder="Cohost Email"
+              placeholder="Email"
               value={cohostEmail}
               onChange={(e) => setCohostEmail(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && tryAddCohost()}
@@ -182,11 +182,11 @@ function InviteCohost() {
 
       <div className="next-button-row">
         {cohosts.length > 0 ? (
-          <Link to="/date" onClick={isHost ? handleNext : null} className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/date" onClick={isHost ? handleNext : null} className="next-button active">
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666', cursor: 'not-allowed' }}>
+          <button className="next-button disabled" disabled>
             Next
           </button>
         )}

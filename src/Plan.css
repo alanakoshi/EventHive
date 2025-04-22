@@ -2,30 +2,8 @@
     font-size: 30px;
   }
   
-  .next-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 16px;
-    text-align: center;
-    width: 100%;
-  }
-  
-  .next-button.active {
-    background-color: #ffcf34;
-    color: #000;
-  }
-  
-  .next-button.disabled {
-    background-color: #ccc;
-    color: #666;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-  
   .back-btn {
-    background-color: #ffcf34;
+    background-color: black;
   }
   .back-icon {
     color:white;

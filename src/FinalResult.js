@@ -1,149 +1,164 @@
-import { useState, useEffect } from 'react';
+// FinalResult.js
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchEventByID, fetchUserNameByUID } from './firebaseHelpers';
 import './Voting.css';
 import './App.css';
 
 function FinalResult() {
-  const [eventOptions, setEventOptions] = useState({});
-  const [finalVotes, setFinalVotes] = useState({});
+  const [eventOptions, setEventOptions]   = useState({ theme: [], venue: [], dates: [] });
+  const [finalVotes, setFinalVotes]       = useState({});
   const [missingVoters, setMissingVoters] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading]             = useState(true);
 
-  const displayLabel = (option) => {
-    if (typeof option === 'string') return option;
-    if (option?.name) return option.name;
-    if (option?.email) return option.email;
-    return 'Unknown Option';
+  // Helper to display a label from either a string or object
+  const displayLabel = (opt) => {
+    if (typeof opt === 'string') return opt;
+    if (opt?.name)                return opt.name;
+    if (opt?.email)               return opt.email;
+    return 'Unknown';
   };
 
-  const getAllOptionsInCategory = (category) => {
-    const fromEvent = eventOptions[category] || [];
+  // Collect all unique options from event + votes
+  const getAllOptionsInCategory = (cat) => {
+    const fromEvent = eventOptions[cat] || [];
     const fromVotes = Object.values(finalVotes)
-      .flatMap(vote => Object.keys(vote?.[category] || {}))
-      .map(o => {
-        try { return JSON.parse(o); }
-        catch { return o; }
+      .flatMap(userVote => Object.keys(userVote?.[cat] || {}))
+      .map(raw => {
+        try { return JSON.parse(raw); }
+        catch { return raw; }
       });
 
-    const combined = [...fromEvent, ...fromVotes];
-    const unique = [];
+    const all = [...fromEvent, ...fromVotes];
+    const uniq = [];
     const seen = new Set();
-    for (const option of combined) {
-      const key = typeof option === 'string' ? option : JSON.stringify(option);
+    for (const o of all) {
+      const key = typeof o === 'string' ? o : JSON.stringify(o);
       if (!seen.has(key)) {
         seen.add(key);
-        unique.push(option);
+        uniq.push(o);
       }
     }
-    return unique;
+    return uniq;
   };
 
-  const getRankedOptions = (category) => {
-    const allOptions = getAllOptionsInCategory(category);
+  // Sum up scores and sort descending
+  const getRanked = (cat) => {
+    const opts = getAllOptionsInCategory(cat);
     const scores = {};
-    for (const userID in finalVotes) {
-      const categoryVotes = finalVotes[userID]?.[category] || {};
-      allOptions.forEach(option => {
-        const key = typeof option === 'string' ? option : JSON.stringify(option);
-        scores[key] = (scores[key] || 0) + (categoryVotes[key] || 0);
+    for (const uid in finalVotes) {
+      const votes = finalVotes[uid]?.[cat] || {};
+      opts.forEach(o => {
+        const key = typeof o === 'string' ? o : JSON.stringify(o);
+        scores[key] = (scores[key] || 0) + (votes[key] || 0);
       });
     }
     return Object.entries(scores)
-      .sort((a, b) => b[1] - a[1])
-      .map(([rawKey, score]) => {
-        let option;
-        try { option = JSON.parse(rawKey); }
-        catch { option = rawKey; }
-        return { option, score };
+      .sort(([,a], [,b]) => b - a)
+      .map(([raw, sc]) => {
+        let o;
+        try { o = JSON.parse(raw); }
+        catch { o = raw; }
+        return { option: o, score: sc };
       });
   };
 
   useEffect(() => {
-    const loadData = async () => {
+    const load = async () => {
       const eventID = localStorage.getItem('eventID');
       if (!eventID) return;
+      const ev = await fetchEventByID(eventID);
+      if (!ev) return;
 
-      const event = await fetchEventByID(eventID);
-      if (!event) return;
+      // normalize theme & venue
+      const theme = Array.isArray(ev.theme) ? ev.theme : [];
+      const venue = Array.isArray(ev.venue) ? ev.venue : [];
 
-      // normalize each category to arrays
-      const theme = Array.isArray(event.theme) ? event.theme : [];
-      const venue = Array.isArray(event.venue) ? event.venue : [];
-      let dates = event.dates || [];
-      if (dates && typeof dates === 'object' && !Array.isArray(dates)) {
-        dates = Object.values(dates).flat();
+      // --- intersect everybody's dates ---
+      let dates = [];
+      const rawDates = ev.dates || {};
+      if (typeof rawDates === 'object' && !Array.isArray(rawDates)) {
+        const lists = Object.values(rawDates).filter(Array.isArray);
+        if (lists.length) {
+          dates = lists.reduce((common, arr) =>
+            common.filter(d => arr.includes(d))
+          , lists[0]);
+        }
+      } else if (Array.isArray(rawDates)) {
+        dates = rawDates;
       }
 
       setEventOptions({ theme, venue, dates });
+      setFinalVotes(ev.votes || {});
 
-      const votes = event.votes || {};
-      setFinalVotes(votes);
-
-      const requiredIDs = [
-        event.hostID,
-        ...(event.cohosts || []).map(c => c.userID).filter(Boolean),
+      // build missing voters list
+      const required = [
+        ev.hostID,
+        ...(ev.cohosts || []).map(c => c.userID).filter(Boolean)
       ];
-      const missing = [];
-      for (const uid of requiredIDs) {
-        if (!votes[uid]) {
+      const miss = [];
+      for (const uid of required) {
+        if (!ev.votes?.[uid]) {
           const name = await fetchUserNameByUID(uid);
-          missing.push(name || 'Unknown');
+          miss.push(name || 'Unknown');
         }
       }
-      setMissingVoters(missing);
+      setMissingVoters(miss);
       setLoading(false);
     };
 
-    loadData();
-    const interval = setInterval(loadData, 1000);
-    return () => clearInterval(interval);
+    load();
+    const iv = setInterval(load, 1000);
+    return () => clearInterval(iv);
   }, []);
 
   return (
     <div className="container">
       <div className="progress-container">
-        <div className="progress-bar" style={{ width: '80%', backgroundColor: '#ffc107' }} />
+        <div className="progress-bar"
+             style={{ width: '80%', backgroundColor: '#ffc107' }} />
         <div className="progress-percentage">80%</div>
       </div>
 
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
         <Link to="/voting" className="btn back-btn rounded-circle shadow-sm back-icon">
-          <i className="bi bi-arrow-left-short"></i>
+          <i className="bi bi-arrow-left-short"/>
         </Link>
-        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Final Rankings</h1>
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">
+          Final Rankings
+        </h1>
       </div>
 
       <div className="instructions">
         Here are the final rankings for each category.
       </div>
 
-      {Object.keys(eventOptions).map((category) => {
-        const ranked = getRankedOptions(category);
-        return (
-          <div key={category} className="category-section">
-            <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
-            <ol className="ranked-list">
-              {ranked.map(({ option, score }, index) => (
-                <li key={index} className={index === 0 ? 'top-pick' : ''}>
-                  {displayLabel(option)} <span className="score-tag">({score} pts)</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        );
-      })}
+      {['theme','venue','dates'].map(cat => (
+        <div key={cat} className="category-section">
+          <h3>{cat.charAt(0).toUpperCase() + cat.slice(1)}</h3>
+          <ol className="ranked-list">
+            {getRanked(cat).map(({ option, score }, i) => (
+              <li key={i} className={i===0 ? 'top-pick' : ''}>
+                {displayLabel(option)} <span className="score-tag">({score} pts)</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ))}
 
       <div className="next-button-row">
         {loading ? (
           <button className="next-button disabled" disabled>Loading...</button>
         ) : missingVoters.length === 0 ? (
-          <Link to="/tasks" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
+          <Link to="/tasks"
+                className="next-button active"
+                style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>
         ) : (
-          <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666' }}>
-            Waiting on votes...
+          <button className="next-button disabled" disabled
+                  style={{ backgroundColor: '#ccc', color: '#666' }}>
+            Waiting on {missingVoters.join(', ')}
           </button>
         )}
       </div>

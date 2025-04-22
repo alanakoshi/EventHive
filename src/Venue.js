@@ -98,6 +98,10 @@ function Venue() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Venue</h1>
       </div>
 
+      <div className='instructions'>
+        Add venue ideas for the event.
+      </div>
+
       <div className="color-block">
         <div className="event-block">
           <input

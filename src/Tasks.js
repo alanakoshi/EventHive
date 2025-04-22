@@ -15,6 +15,7 @@ function Tasks() {
   const { cohosts } = useContext(CohostContext);
   const [tasks, setTasks] = useState({});
   const [userNames, setUserNames] = useState({});
+  const [isHost, setIsHost] = useState(false);
   const eventID = localStorage.getItem('eventID');
   const currentUser = auth.currentUser;
   const currentUserEmail = currentUser?.email || '';
@@ -35,8 +36,11 @@ function Tasks() {
       setTasks(grouped);
 
       const hostID = event?.hostID;
-      const hostName = hostID ? await fetchUserNameByUID(hostID) : 'Host';
+      if (hostID === currentUserID) {
+        setIsHost(true);
+      }
 
+      const hostName = hostID ? await fetchUserNameByUID(hostID) : 'Host';
       const emailsFromCohosts = event?.cohosts?.map(c => c.email) || [];
       const namesFromCohosts = event?.cohosts?.reduce((acc, cur) => {
         acc[cur.email] = cur.name;
@@ -75,6 +79,7 @@ function Tasks() {
   };
 
   const handleAddTask = async (owner, text) => {
+    if (!isHost) return;
     const name = userNames[owner] || owner;
     if (!text.trim()) return;
 
@@ -88,6 +93,7 @@ function Tasks() {
   };
 
   const handleDeleteTask = async (name, index) => {
+    if (!isHost) return;
     const updated = tasks[name].filter((_, i) => i !== index);
     const newState = { ...tasks, [name]: updated };
     setTasks(newState);
@@ -104,6 +110,7 @@ function Tasks() {
   };
 
   const handleEditTask = async (name, index, newText) => {
+    if (!isHost) return;
     const updated = tasks[name].map((task, i) =>
       i === index ? { ...task, text: newText } : task
     );
@@ -128,31 +135,51 @@ function Tasks() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Tasks</h1>
       </div>
 
+      <div className='instructions'>
+        Hosts assign tasks. Click the box when you complete one.
+      </div>
+
+      
       {allTaskOwners.map((owner, idx) => {
         const name = userNames[owner] || owner;
         return (
-          <div key={idx} className="color-block">
+          <div key={idx} className="category-section bordered-block">
             <h3>{name}'s Tasks</h3>
-            <TaskInput onAdd={(task) => handleAddTask(owner, task)} />
-            <ul>
+            {isHost && <TaskInput onAdd={(task) => handleAddTask(owner, task)} />}
+            <ul className="task-list">
               {(tasks[name] || []).map((task, i) => (
-                <li key={i} className={task.completed ? 'completed' : ''}>
-                  <input
-                    type="checkbox"
-                    checked={task.completed}
-                    onChange={() => handleToggleComplete(name, i)}
-                  />
-                  <EditableTask
-                    text={task.text}
-                    onSave={(newText) => handleEditTask(name, i, newText)}
-                  />
-                  <button onClick={() => handleDeleteTask(name, i)}>x</button>
+                <li key={i} className={`task-item ${task.completed ? 'completed' : ''}`}>
+                  <div className="task-content">
+                    <input
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={() => handleToggleComplete(name, i)}
+                    />
+                    {isHost ? (
+                      <EditableTask
+                        text={task.text}
+                        onSave={(newText) => handleEditTask(name, i, newText)}
+                      />
+                    ) : (
+                      <span>{task.text}</span>
+                    )}
+                  </div>
+                  {isHost && (
+                    <button
+                      onClick={() => handleDeleteTask(name, i)}
+                      className="remove-button"
+                      style={{ marginLeft: '8px' }}
+                    >
+                      ✕
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
           </div>
         );
       })}
+
 
       <div className="next-button-row">
         <Link to="/complete" className="next-button">

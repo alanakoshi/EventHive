@@ -10,6 +10,7 @@ function Plan() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [isHost, setIsHost] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,6 +22,11 @@ function Plan() {
           setEventName(event.name);
           setIsSubmitted(true);
         }
+        if (event?.hostID === auth.currentUser?.uid) {
+          setIsHost(true);
+        }
+      } else {
+        setIsHost(true); // Creating a new event, so user is the host
       }
     };
     loadEvent();
@@ -40,6 +46,7 @@ function Plan() {
         localStorage.setItem("eventID", eventID);
         setIsSubmitted(true);
         setIsEditing(false);
+        setIsHost(true);
       }
     }
   };
@@ -71,35 +78,46 @@ function Plan() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Event Name</h1>
       </div>
 
+      <div className='instructions'>
+        {isHost
+          ? "Enter event name."
+          : "Event name was set by the host."}
+      </div>
+      
       <div className="color-block">
         <div className='event-block'>
         {isSubmitted ? (
           <div className="event-name-box">
             {eventName}
-            <button onClick={handleEditClick} className="edit-button">Edit</button>
+            {isHost && (
+              <button onClick={handleEditClick} className="edit-button">Edit</button>
+            )}
           </div>
         ) : (
-          <input
-            type="text"
-            placeholder="Enter event name"
-            value={eventName}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyPress}
-            onBlur={async () => {
-              if (eventName.trim() === "") {
-                setShowWarning(true);
-                setTimeout(() => setShowWarning(false), 2000);
-                return;
-              }
+          isHost && (
+            <input
+              type="text"
+              placeholder="Enter event name"
+              value={eventName}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyPress}
+              onBlur={async () => {
+                if (eventName.trim() === "") {
+                  setShowWarning(true);
+                  setTimeout(() => setShowWarning(false), 2000);
+                  return;
+                }
 
-              const eventID = await addEventToFirestore(auth.currentUser.uid, eventName, "", "");
-              localStorage.setItem("eventID", eventID);
-              setIsSubmitted(true);
-              setIsEditing(false);
-            }}
-            autoFocus
-            className="event-input"
-          />
+                const eventID = await addEventToFirestore(auth.currentUser.uid, eventName, "", "");
+                localStorage.setItem("eventID", eventID);
+                setIsSubmitted(true);
+                setIsEditing(false);
+                setIsHost(true);
+              }}
+              autoFocus
+              className="event-input"
+            />
+          )
         )}
         </div>
       </div>

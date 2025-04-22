@@ -122,6 +122,13 @@ function InviteCohost() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Invite Cohost</h1>
       </div>
 
+      <div className='instructions'>
+        {isHost
+          ? "Invite cohosts by entering their name and email."
+          : "Only the host can invite cohosts."}
+      </div>
+
+
       {isHost && (
         <div className='color-block'>
           <div className='event-block'>

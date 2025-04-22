@@ -105,6 +105,11 @@ function Voting() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Voting</h1>
       </div>
 
+      <div className='instructions'>
+        Rank each category by dragging options in your preferred order.
+      </div>
+
+
       <DragDropContext onDragEnd={handleDragEnd}>
         {['theme', 'venue', 'dates'].map((category) => (
           <div key={category} className="category-section">

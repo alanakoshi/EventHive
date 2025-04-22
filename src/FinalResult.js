@@ -119,7 +119,11 @@ function FinalResult() {
         <Link to="/voting" className="btn back-btn rounded-circle shadow-sm back-icon">
           <i className="bi bi-arrow-left-short"></i>
         </Link>
-        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Final Rankings</h1>
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Final Ranking</h1>
+      </div>
+
+      <div className='instructions'>
+        These are the final rankings based on everyone's votes.
       </div>
 
       {Object.keys(eventOptions).map((category) => {
@@ -137,17 +141,6 @@ function FinalResult() {
           </div>
         );
       })}
-
-      {!loading && missingVoters.length > 0 && (
-        <div className="alert-popup">
-          Waiting on:
-          <ul>
-            {missingVoters.map((name, idx) => (
-              <li key={idx}>{name}</li>
-            ))}
-          </ul>
-        </div>
-      )}
 
       <div className="next-button-row">
         {loading ? (

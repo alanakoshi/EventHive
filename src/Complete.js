@@ -74,6 +74,10 @@ function Complete() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Complete</h1>
       </div>
 
+      <div className="instructions">
+        Final selections are shown below. Tasks will update as they're completed.
+      </div>
+
       <div className="details">
         <p><strong>Date:</strong> {topDate}</p>
         <p><strong>Theme:</strong> {topTheme}</p>

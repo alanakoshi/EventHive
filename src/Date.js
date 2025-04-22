@@ -119,6 +119,11 @@ function SelectDate() {
         </Link>
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Date</h1>
       </div>
+      
+      <div className='instructions'>
+        Select all dates you’re available for the event.
+      </div>
+
 
       <div className="calendar-header">
         <button className="calendar-arrow" onClick={handlePrevMonth}>&lt;</button>

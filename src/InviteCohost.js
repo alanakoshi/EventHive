@@ -97,8 +97,10 @@ function InviteCohost() {
 
   return (
     <div className="container">
-      <div className="progress-container">
-        <div className="progress-bar" style={{ width: '20%', backgroundColor: '#ffc107' }} />
+      <div className="progress-wrapper">
+        <div className="progress-container">
+          <div className="progress-bar" style={{ width: '20%' }} />
+        </div>
         <div className="progress-percentage">20%</div>
       </div>
 

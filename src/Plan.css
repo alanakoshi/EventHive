@@ -43,3 +43,9 @@
     background-color: #B09537;
     transform: scale(1.05);
   }
+
+  .event-name-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;    /* ← this creates an 8px gap between the name and button */
+  }

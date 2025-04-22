@@ -8,21 +8,34 @@
     position: relative;
   }
   
-  /* Progress Bar Styles */
-  .progress-bar {
-    position: relative;
-    height: 8px;
-    background-color: #eee;
-    border-radius: 4px;
-    margin-bottom: 40px;
-  }
-  .percentage {
-    position: absolute;
-    top: -25px;
-    right: 20px;
-    font-size: 14px;
-    color: #444;
-  }
+.progress-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;             /* space between bar & text */
+  margin-bottom: 20px;  /* breathing room */
+  width: 100%;
+}
+
+.progress-container {
+  flex: 1;              /* grow to fill available width */
+  height: 8px;
+  background-color: #e0e0e0; /* light‑gray track */
+  border-radius: 4px;
+  overflow: hidden;     /* clip the amber fill */
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;            /* overridden inline */
+  background-color: #ffc107; /* amber fill */
+  transition: width 0.3s ease;
+}
+
+.progress-percentage {
+  font-size: 14px;
+  color: #333;
+  white-space: nowrap;  /* keep it on one line */
+}
   
   /* Back & Next Button */
   .back-button,

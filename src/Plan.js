@@ -66,8 +66,10 @@ function Plan() {
 
   return (
     <div className="container">
-      <div className="progress-container">
-        <div className="progress-bar" style={{ width: '10%', backgroundColor: '#ffc107' }} />
+      <div className="progress-wrapper">
+        <div className="progress-container">
+          <div className="progress-bar" style={{ width: '10%' }} />
+        </div>
         <div className="progress-percentage">10%</div>
       </div>
 

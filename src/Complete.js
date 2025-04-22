@@ -71,8 +71,10 @@ function Complete() {
 
   return (
     <div className="complete-container">
-      <div className="progress-container">
-        <div className="progress-bar" style={{ width: '100%', backgroundColor: '#ffc107' }} />
+      <div className="progress-wrapper">
+        <div className="progress-container">
+          <div className="progress-bar" style={{ width: '100%' }} />
+        </div>
         <div className="progress-percentage">100%</div>
       </div>
 

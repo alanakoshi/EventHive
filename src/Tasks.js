@@ -30,9 +30,14 @@ function Tasks() {
       const loadedTasks = event?.tasks || [];
       const grouped = {};
       loadedTasks.forEach(task => {
-        if (!grouped[task.cohostName]) grouped[task.cohostName] = [];
-        grouped[task.cohostName].push(task);
+        const ownerKey = task.cohostName === 'HOST' ? event?.hostID : task.cohostName;
+        if (!grouped[ownerKey]) grouped[ownerKey] = [];
+        grouped[ownerKey].push(task);
       });
+      if (grouped['HOST'] && event?.hostID) {
+        grouped[event.hostID] = [...(grouped[event.hostID] || []), ...grouped['HOST']];
+        delete grouped['HOST'];
+      }
       setTasks(grouped);
 
       const hostID = event?.hostID;
@@ -55,8 +60,8 @@ function Tasks() {
         nameMap[email] = fetchedName || namesFromCohosts[email] || email;
       }
 
-      if (hostID && hostID !== currentUserID) {
-        nameMap['HOST'] = hostName;
+      if (hostID) {
+        nameMap[hostID] = hostName;
       }
 
       nameMap[currentUserEmail] = currentUserName;
@@ -86,7 +91,7 @@ function Tasks() {
     const newTask = { text, completed: false };
     const updated = {
       ...tasks,
-      [name]: [...(tasks[name] || []), newTask],
+      [owner]: [...(tasks[owner] || []), newTask],
     };
     setTasks(updated);
     await persistTasksToFirestore(updated);
@@ -119,7 +124,7 @@ function Tasks() {
     await persistTasksToFirestore(newState);
   };
 
-  const allTaskOwners = Object.keys(userNames);
+  const allTaskOwners = Object.keys(tasks);
 
   return (
     <div className="container">
@@ -139,7 +144,6 @@ function Tasks() {
         Hosts assign tasks. Click the box when you complete one.
       </div>
 
-      
       {allTaskOwners.map((owner, idx) => {
         const name = userNames[owner] || owner;
         return (
@@ -147,18 +151,18 @@ function Tasks() {
             <h3>{name}'s Tasks</h3>
             {isHost && <TaskInput onAdd={(task) => handleAddTask(owner, task)} />}
             <ul className="task-list">
-              {(tasks[name] || []).map((task, i) => (
+              {(tasks[owner] || []).map((task, i) => (
                 <li key={i} className={`task-item ${task.completed ? 'completed' : ''}`}>
                   <div className="task-content">
                     <input
                       type="checkbox"
                       checked={task.completed}
-                      onChange={() => handleToggleComplete(name, i)}
+                      onChange={() => handleToggleComplete(owner, i)}
                     />
                     {isHost ? (
                       <EditableTask
                         text={task.text}
-                        onSave={(newText) => handleEditTask(name, i, newText)}
+                        onSave={(newText) => handleEditTask(owner, i, newText)}
                       />
                     ) : (
                       <span>{task.text}</span>
@@ -166,9 +170,9 @@ function Tasks() {
                   </div>
                   {isHost && (
                     <button
-                      onClick={() => handleDeleteTask(name, i)}
+                      onClick={() => handleDeleteTask(owner, i)}
                       className="remove-button"
-                      style={{ marginLeft: '8px' }}
+                      style={{ marginLeft: 'auto' }}
                     >
                       ✕
                     </button>
@@ -179,7 +183,6 @@ function Tasks() {
           </div>
         );
       })}
-
 
       <div className="next-button-row">
         <Link to="/complete" className="next-button">

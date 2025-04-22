@@ -21,10 +21,28 @@ function Voting() {
       const eventData = await fetchEventByID(eventID);
       if (!eventData) return;
 
+      // normalize theme & venue
+      const themeOpts = eventData.theme || [];
+      const venueOpts = eventData.venue || [];
+
+      // normalize dates: flatten object→array or use array directly
+      let dateOpts = [];
+      if (Array.isArray(eventData.dates)) {
+        dateOpts = eventData.dates;
+      } else if (eventData.dates && typeof eventData.dates === 'object') {
+        dateOpts = Array.from(
+          new Set(
+            Object.values(eventData.dates)
+              .filter(arr => Array.isArray(arr))
+              .flat()
+          )
+        );
+      }
+
       const updatedOptions = {
-        theme: eventData.theme || [],
-        venue: eventData.venue || [],
-        dates: eventData.dates || [],
+        theme: themeOpts,
+        venue: venueOpts,
+        dates: dateOpts,
       };
       setEventOptions(updatedOptions);
 
@@ -36,24 +54,31 @@ function Voting() {
         const currentOptions = updatedOptions[category];
 
         if (userVotes[category]) {
+          // already voted: merge previous ranking order with any new options
           const sorted = Object.entries(userVotes[category])
             .sort((a, b) => b[1] - a[1])
-            .map(([option]) => option);
+            .map(([opt]) => opt);
 
           const merged = [...new Set([...sorted, ...currentOptions])];
           newRankings[category] = merged;
 
           const scores = {};
-          merged.forEach((opt, i) => (scores[opt] = merged.length - i));
+          merged.forEach((opt, i) => {
+            scores[opt] = merged.length - i;
+          });
           newVotes[category] = scores;
         } else {
+          // first time: default ordering
           const defaultOrder = [...currentOptions];
           newRankings[category] = defaultOrder;
 
           const scores = {};
-          defaultOrder.forEach((opt, i) => (scores[opt] = defaultOrder.length - i));
+          defaultOrder.forEach((opt, i) => {
+            scores[opt] = defaultOrder.length - i;
+          });
           newVotes[category] = scores;
 
+          // persist initial vote
           await saveRankingVoteToFirestore(eventID, userID, category, scores);
         }
       }
@@ -77,18 +102,18 @@ function Voting() {
     reordered.splice(result.destination.index, 0, movedItem);
 
     const scores = {};
-    reordered.forEach((item, index) => {
-      scores[item] = reordered.length - index;
+    reordered.forEach((item, i) => {
+      scores[item] = reordered.length - i;
     });
 
-    setRankings((prev) => ({ ...prev, [category]: reordered }));
-    setVotes((prev) => ({ ...prev, [category]: scores }));
+    setRankings(prev => ({ ...prev, [category]: reordered }));
+    setVotes(prev => ({ ...prev, [category]: scores }));
 
     await saveRankingVoteToFirestore(eventID, userID, category, scores);
   };
 
   const allCategoriesRanked = ['theme', 'venue', 'dates'].every(
-    (category) => rankings[category] && rankings[category].length > 0
+    category => Array.isArray(rankings[category]) && rankings[category].length > 0
   );
 
   return (
@@ -105,25 +130,28 @@ function Voting() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Voting</h1>
       </div>
 
-      <div className='instructions'>
+      <div className="instructions">
         Rank each category by dragging options in your preferred order.
       </div>
 
-
       <DragDropContext onDragEnd={handleDragEnd}>
-        {['theme', 'venue', 'dates'].map((category) => (
+        {['theme', 'venue', 'dates'].map(category => (
           <div key={category} className="category-section">
             <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
             <Droppable droppableId={category}>
-              {(provided) => (
-                <div className="options-list" {...provided.droppableProps} ref={provided.innerRef}>
+              {provided => (
+                <div
+                  className="options-list"
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                >
                   {(rankings[category] || []).map((option, index) => (
                     <Draggable
-                      key={typeof option === 'string' ? option : JSON.stringify(option)}
-                      draggableId={typeof option === 'string' ? option : JSON.stringify(option)}
+                      key={option}
+                      draggableId={option}
                       index={index}
                     >
-                      {(provided) => (
+                      {provided => (
                         <div
                           className="option-item"
                           ref={provided.innerRef}
@@ -131,9 +159,7 @@ function Voting() {
                           {...provided.dragHandleProps}
                         >
                           <span className="option-rank">{index + 1}.</span>
-                          <span className="option-text">
-                            {typeof option === 'string' ? option : option.name || JSON.stringify(option)}
-                          </span>
+                          <span className="option-text">{option}</span>
                         </div>
                       )}
                     </Draggable>
@@ -148,11 +174,7 @@ function Voting() {
 
       <div className="next-button-row">
         {allCategoriesRanked ? (
-          <Link
-            to="/final-result"
-            className="next-button active"
-            style={{ backgroundColor: '#ffcf34', color: '#000' }}
-          >
+          <Link to="/final-result" className="next-button active" style={{ backgroundColor: '#ffcf34', color: '#000' }}>
             Next
           </Link>
         ) : (

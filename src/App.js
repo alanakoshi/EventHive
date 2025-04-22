@@ -14,6 +14,7 @@ import Tasks from "./Tasks";
 import Complete from "./Complete";
 import { EventProvider } from "./EventContext";
 import { CohostProvider } from "./CohostContext";
+import MenuSideBar from './components/MenuSideBar';
 import "./App.css";
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
             <Route path="/final-result" element={<FinalResult />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/complete" element={<Complete />} />
+            <Route path="/profile" element={<MenuSideBar />} />
           </Routes>
         </Router>
       </CohostProvider>

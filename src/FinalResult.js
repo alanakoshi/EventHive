@@ -22,17 +22,13 @@ function FinalResult() {
     const fromVotes = Object.values(finalVotes)
       .flatMap(vote => Object.keys(vote?.[category] || {}))
       .map(o => {
-        try {
-          return JSON.parse(o);
-        } catch {
-          return o;
-        }
+        try { return JSON.parse(o); }
+        catch { return o; }
       });
 
     const combined = [...fromEvent, ...fromVotes];
     const unique = [];
     const seen = new Set();
-
     for (const option of combined) {
       const key = typeof option === 'string' ? option : JSON.stringify(option);
       if (!seen.has(key)) {
@@ -40,14 +36,12 @@ function FinalResult() {
         unique.push(option);
       }
     }
-
     return unique;
   };
 
   const getRankedOptions = (category) => {
     const allOptions = getAllOptionsInCategory(category);
     const scores = {};
-
     for (const userID in finalVotes) {
       const categoryVotes = finalVotes[userID]?.[category] || {};
       allOptions.forEach(option => {
@@ -55,16 +49,12 @@ function FinalResult() {
         scores[key] = (scores[key] || 0) + (categoryVotes[key] || 0);
       });
     }
-
     return Object.entries(scores)
       .sort((a, b) => b[1] - a[1])
       .map(([rawKey, score]) => {
         let option;
-        try {
-          option = JSON.parse(rawKey);
-        } catch {
-          option = rawKey;
-        }
+        try { option = JSON.parse(rawKey); }
+        catch { option = rawKey; }
         return { option, score };
       });
   };
@@ -77,11 +67,15 @@ function FinalResult() {
       const event = await fetchEventByID(eventID);
       if (!event) return;
 
-      setEventOptions({
-        theme: event.theme || [],
-        venue: event.venue || [],
-        dates: event.dates || []
-      });
+      // normalize each category to arrays
+      const theme = Array.isArray(event.theme) ? event.theme : [];
+      const venue = Array.isArray(event.venue) ? event.venue : [];
+      let dates = event.dates || [];
+      if (dates && typeof dates === 'object' && !Array.isArray(dates)) {
+        dates = Object.values(dates).flat();
+      }
+
+      setEventOptions({ theme, venue, dates });
 
       const votes = event.votes || {};
       setFinalVotes(votes);
@@ -90,7 +84,6 @@ function FinalResult() {
         event.hostID,
         ...(event.cohosts || []).map(c => c.userID).filter(Boolean),
       ];
-
       const missing = [];
       for (const uid of requiredIDs) {
         if (!votes[uid]) {
@@ -98,7 +91,6 @@ function FinalResult() {
           missing.push(name || 'Unknown');
         }
       }
-
       setMissingVoters(missing);
       setLoading(false);
     };
@@ -119,18 +111,18 @@ function FinalResult() {
         <Link to="/voting" className="btn back-btn rounded-circle shadow-sm back-icon">
           <i className="bi bi-arrow-left-short"></i>
         </Link>
-        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Final Ranking</h1>
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Final Rankings</h1>
       </div>
 
-      <div className='instructions'>
-        These are the final rankings based on everyone's votes.
+      <div className="instructions">
+        Here are the final rankings for each category.
       </div>
 
       {Object.keys(eventOptions).map((category) => {
         const ranked = getRankedOptions(category);
         return (
           <div key={category} className="category-section">
-            <h3>{category.charAt(0).toUpperCase() + category.slice(1)}:</h3>
+            <h3>{category.charAt(0).toUpperCase() + category.slice(1)}</h3>
             <ol className="ranked-list">
               {ranked.map(({ option, score }, index) => (
                 <li key={index} className={index === 0 ? 'top-pick' : ''}>
@@ -151,7 +143,7 @@ function FinalResult() {
           </Link>
         ) : (
           <button className="next-button disabled" disabled style={{ backgroundColor: '#ccc', color: '#666' }}>
-            Next
+            Waiting on votes...
           </button>
         )}
       </div>

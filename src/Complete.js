@@ -11,52 +11,61 @@ function Complete() {
   const [previousVotes, setPreviousVotes] = useState(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      loadFinalData();
-    }, 1000);
-
+    const interval = setInterval(loadFinalData, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [previousVotes]);
 
   const loadFinalData = async () => {
     const eventID = localStorage.getItem('eventID');
     const event = await fetchEventByID(eventID);
     if (!event) return;
 
+    // only recalc when votes change
     const votesString = JSON.stringify(event.votes || {});
     if (votesString !== JSON.stringify(previousVotes)) {
       setPreviousVotes(event.votes);
 
       const getTop = (categoryKey, originalOrder) => {
+        // 1) aggregate scores
         const scores = {};
         Object.values(event.votes || {}).forEach(userVote => {
           const vote = userVote[categoryKey];
           if (vote) {
-            for (const [option, score] of Object.entries(vote)) {
-              scores[option] = (scores[option] || 0) + score;
-            }
+            Object.entries(vote).forEach(([opt, sc]) => {
+              scores[opt] = (scores[opt] || 0) + sc;
+            });
           }
         });
 
-        // Sort by score DESC, and fallback to order from original event data
-        const sorted = originalOrder
-          .map(option => ({
-            option,
-            score: scores[option] || 0
-          }))
+        // 2) normalize originalOrder into an array
+        let orderArray;
+        if (Array.isArray(originalOrder)) {
+          orderArray = originalOrder;
+        } else if (originalOrder && typeof originalOrder === 'object') {
+          // union of all subarrays
+          orderArray = Object.values(originalOrder).flat();
+        } else {
+          orderArray = [];
+        }
+        // remove duplicates but keep first appearance
+        const uniqueOrder = [...new Set(orderArray)];
+
+        // 3) sort by score desc
+        const sorted = uniqueOrder
+          .map(option => ({ option, score: scores[option] || 0 }))
           .sort((a, b) => b.score - a.score);
 
         return sorted.length > 0 ? sorted[0].option : 'N/A';
       };
 
-      setTopDate(getTop('dates', event.dates || []));
-      setTopTheme(getTop('theme', event.theme || []));
-      setTopVenue(getTop('venue', event.venue || []));
+      setTopDate(getTop('dates', event.dates));
+      setTopTheme(getTop('theme', event.theme));
+      setTopVenue(getTop('venue', event.venue));
     }
 
-    // Update task status separately
+    // tasks status
     const tasks = event.tasks || [];
-    const allCompleted = tasks.length === 0 || tasks.every(task => task.completed);
+    const allCompleted = tasks.length === 0 || tasks.every(t => t.completed);
     setTaskStatus(allCompleted ? 'Finished' : 'In Progress');
   };
 

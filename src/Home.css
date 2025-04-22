@@ -1,129 +1,192 @@
-  body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 40px;
-    background-color: #fff;
-  }
-  
-  h1 {
-    font-size: 36px;
-    font-weight: bold;
-    margin-bottom: 20px;
-  }
-  
-  .event-card {
-    background-color: #f6d337;
-    border-radius: 12px;
-    padding: 12px;
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-  }
-  
-  .date-box {
-    background-color: #a3842f;
-    color: white;
-    text-align: center;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    margin-right: 15px;
-    min-width: 50px;
-  }
-  
-  .date-box div:last-child {
-    font-weight: normal;
-    font-size: 13px;
-  }
-  
-  .event-info {
-    color: white;
-  }
-  
-  .event-info .title {
-    font-weight: bold;
-    font-size: 16px;
-    margin-bottom: 4px;
-  }
-  
-  .event-info .time {
-    font-size: 14px;
-  }
-  
-  .grid-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
-    margin-top: 30px;
-  }
-  
-  .grid-buttons .button-tile {
-    background-color: #FDF9DC;  /*Updated tile color*/
-    border-radius: 16px;
-    text-align: center;
-    padding: 20px;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 1px 2px 5px rgba(0,0,0,0.1);
-    transition: background 0.2s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+/* Home.css */
 
-  .button-tile span {
-    margin-top: 8px; /* adds some spacing between the icon and the text */
-  }
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  background-color: #fff;
+}
 
-  .button-tile:hover {
-    background-color: #f0e6b0;
-  }
-    
-  .button-back {
-    background-color: #ffffff;
-  }
+h1 {
+  font-size: 36px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
 
-  .instructions {
-    margin-bottom: 15px;
-  }
+.homepage-container {
+  padding: 10px;
+  padding-bottom: 80px;
+  position: relative;
+}
 
-  .task-list {
-    list-style: none;
-    padding-left: 0;
-    margin: 0;
-  }
-  
-  .task-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 6px 12px;
-    border-bottom: 1px solid #eee;
-    position: relative;
-  }
-  
-  .task-content {
-    display: flex;
-    align-items: center;
-    flex-grow: 1;
-    gap: 12px;
-  }
-  
-  .remove-button {
-    background: none;
-    border: none;
-    font-size: 18px;
-    color: #444;
-    cursor: pointer;
-    padding: 0;
-    margin-left: auto;
-    align-self: center;
-  }
-  
-  .task-item input[type="checkbox"] {
-    transform: scale(1.2);
-    cursor: pointer;
-  }
-  
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.align-center {
+  justify-content: space-between;
+}
+
+.logo-icon.small-top-right {
+  width: 40px;
+  height: 40px;
+  margin-left: auto;
+}
+
+.homepage-title {
+  font-size: 28px;
+  font-weight: bold;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.avatar-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #737373;
+  color: #ffffff;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.events-list {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.event-card-home {
+  background-color: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 180px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+  cursor: pointer;
+  position: relative;
+}
+
+.event-img-box {
+  position: relative;
+  height: 50%;
+  width: 100%;
+}
+
+.event-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.date-box {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background-color: #ffffff;
+  color: black;
+  text-align: center;
+  padding: 4px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 44px;
+  z-index: 1;
+}
+
+.date-day {
+  font-size: 14px;
+}
+
+.date-month {
+  font-size: 11px;
+  font-weight: normal;
+}
+
+.event-info-box {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 50%;
+  position: relative;
+}
+
+.event-name {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.event-time,
+.event-location {
+  display: flex;
+  font-size: 14px;
+  margin-bottom: 4px;
+  gap: 6px;
+}
+
+.cohost-icons {
+  font-size: 13px;
+  color: #333;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 4px;
+}
+
+.circle-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #ddd;
+  color: #333;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: bold;
+  margin-left: 4px;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: white;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.nav-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-icon img {
+  width: 28px;
+  height: 28px;
+}
+
+.nav-icon.add-button img {
+  width: 36px;
+  height: 36px;
+}

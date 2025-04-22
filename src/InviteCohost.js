@@ -6,7 +6,8 @@ import {
   addCohostToFirestore,
   updateEventInFirestore,
   deleteCohostFromFirestore,
-  fetchEventByID
+  fetchEventByID,
+  fetchUserNameByEmail
 } from './firebaseHelpers';
 import './InviteCohost.css';
 import './App.css';
@@ -21,20 +22,30 @@ function InviteCohost() {
 
   useEffect(() => {
     const eventID = localStorage.getItem("eventID");
-
+  
     const loadCohosts = async () => {
       const event = await fetchEventByID(eventID);
       if (event?.cohosts) {
-        setCohosts(event.cohosts);
-        localStorage.setItem("cohosts", JSON.stringify(event.cohosts));
+        // Replace cohost names with user names from account if available
+        const updatedCohosts = await Promise.all(event.cohosts.map(async (cohost) => {
+          const realName = await fetchUserNameByEmail(cohost.email);
+          return {
+            ...cohost,
+            name: realName || cohost.name,
+          };
+        }));
+  
+        setCohosts(updatedCohosts);
+        localStorage.setItem("cohosts", JSON.stringify(updatedCohosts));
       }
+  
       if (event?.hostID === auth.currentUser?.uid) {
         setIsHost(true);
       }
     };
-
+  
     loadCohosts();
-    const interval = setInterval(loadCohosts, 3000); // auto-refresh every 3s
+    const interval = setInterval(loadCohosts, 1000);
     return () => clearInterval(interval);
   }, [setCohosts]);
 
@@ -83,20 +94,19 @@ function InviteCohost() {
     const trimmedName = cohostName.trim();
     const trimmedEmail = cohostEmail.trim();
     const eventID = localStorage.getItem("eventID");
-  
+
     if (trimmedName === "" || trimmedEmail === "") return;
-  
-    const newCohost = { name: trimmedName, email: trimmedEmail };
-    const updatedCohosts = [...cohosts, newCohost];
-  
+
     try {
-      // First: add to the cohosts collection (avoids duplicates automatically)
-      await addCohostToFirestore(eventID, trimmedName, trimmedEmail);
-  
-      // Then: update the event document's cohosts array
+      const fetchedName = await fetchUserNameByEmail(trimmedEmail);
+      const finalName = fetchedName || trimmedName;
+
+      const newCohost = { name: finalName, email: trimmedEmail };
+      const updatedCohosts = [...cohosts, newCohost];
+
+      await addCohostToFirestore(eventID, finalName, trimmedEmail);
       await updateEventInFirestore(eventID, { cohosts: updatedCohosts });
-  
-      // Then: update local state and UI
+
       setCohosts(updatedCohosts);
       localStorage.setItem("cohosts", JSON.stringify(updatedCohosts));
       setCohostName("");
@@ -106,7 +116,8 @@ function InviteCohost() {
       setShowWarning(true);
       setTimeout(() => setShowWarning(false), 3000);
     }
-  };  
+  };
+
 
   return (
     <div className="container">

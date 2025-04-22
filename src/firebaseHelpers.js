@@ -59,10 +59,15 @@ export const addCohostToFirestore = async (eventID, name, email, role = 'cohost'
       return;
     }
 
+    // Check if user with this email exists and use their name if found
+    const userQuery = query(collection(db, 'users'), where('email', '==', email));
+    const userSnapshot = await getDocs(userQuery);
+    const matchedUserName = !userSnapshot.empty ? userSnapshot.docs[0].data().name : name;
+
     await addDoc(collection(db, 'cohosts'), {
       eventID,
       email,
-      name,
+      name: matchedUserName,
       role,
       addedAt: serverTimestampFn(),
     });

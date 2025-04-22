@@ -8,6 +8,7 @@ import './Home.css';
 
 function Home() {
   const [events, setEvents] = useState([]);
+  const [filter, setFilter] = useState('All');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -50,9 +51,27 @@ function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  const today = new Date();
+  const filteredEvents = events.filter(ev => {
+    if (!ev.rawDate) return false;
+    const d = new Date(ev.rawDate);
+    switch (filter) {
+      case 'Month':
+        return d.getMonth() === today.getMonth() &&
+               d.getFullYear() === today.getFullYear();
+      case 'Day':
+        return d.toDateString() === today.toDateString();
+      case 'Year':
+        return d.getFullYear() === today.getFullYear();
+      default:
+        return true;
+    }
+  });
+
   const formatDateBox = (dateString) => {
     if (!dateString) return null;
-    const date = new Date(dateString);
+    const [y,m,d] = dateString.split('-');
+    const date = new Date(Number(y), Number(m) - 1, Number(d));
     const day = date.getDate();
     const month = date.toLocaleString('default', { month: 'short' });
     return (
@@ -61,7 +80,7 @@ function Home() {
         <div className="date-month">{month.toUpperCase()}</div>
       </div>
     );
-  };
+  };  
 
   const handleNewEvent = () => {
     localStorage.clear();
@@ -102,6 +121,20 @@ function Home() {
         <img src={process.env.PUBLIC_URL + '/EventHiveLogo.svg'} alt="Event Hive logo" className="logo-icon small-top-right" />
       </div>
 
+      {/* SORT‑BY CONTROLS */}
+      <div className="sort-by-row">
+        <span className="sort-label">Sort By</span>
+        {['All','Month','Day','Year'].map(key => (
+          <button
+            key={key}
+            className={`sort-btn ${filter===key?'active':''}`}
+            onClick={()=>setFilter(key)}
+          >
+            {key}
+          </button>
+        ))}
+      </div>
+      
       <div className="events-list">
         {events.length === 0 ? (
           <p>No events found.</p>

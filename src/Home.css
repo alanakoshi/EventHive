@@ -232,3 +232,33 @@ h1 {
   transform: scale(1.2);
   cursor: pointer;
 }
+
+/* sort‑by row */
+.sort-by-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.sort-label {
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+.sort-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+.sort-btn.active {
+  background: #000;
+  color: #fff;
+  border-color: #000;
+}
+.sort-btn:hover {
+  border-color: #888;
+}

@@ -37,7 +37,7 @@
   }
   
   .auth-tab.active {
-    background-color: #E8C547;
+    background-color: #000;
     color: white;
     font-weight: bold;
   }

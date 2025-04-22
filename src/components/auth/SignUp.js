@@ -53,8 +53,8 @@ function SignUp() {
         <div className="mb-3">
           <input
             type="text"
-            className="form-control"
-            placeholder="Full Name"
+            className="form-control ps-3"
+            placeholder="Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
@@ -83,7 +83,7 @@ function SignUp() {
           />
         </div>
 
-        <button type="submit" className="btn btn-brown w-100 text-white">
+        <button type="submit" className="btn btn-dark w-100 text-white">
           Sign Up
         </button>
       </form>

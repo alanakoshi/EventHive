@@ -13,32 +13,26 @@ export default function Voting() {
   const eventID = localStorage.getItem('eventID');
   const userID = auth.currentUser?.uid;
 
-  // Local state for your three ranking lists
+  // Local state for rankings
   const [rankings, setRankings] = useState({
-    theme:    [],
-    venue:    [],
-    dates:    [],  // ← we'll populate this with the intersection
+    theme: [], venue: [], dates: [],
   });
-
-  // Hold the computed intersection of dates
   const [commonDates, setCommonDates] = useState([]);
 
   useEffect(() => {
     let interval;
-
     async function loadOptionsAndVotes() {
       const event = await fetchEventByID(eventID);
       if (!event) return;
 
-      // 1. basic theme & venue arrays
       const theme = event.theme || [];
       const venue = event.venue || [];
 
-      // 2. compute intersection of event.dates (which is an object { email: [isoDates], … })
+      // compute intersection of dates
       let intersects = [];
       const rawDates = event.dates;
       if (rawDates && typeof rawDates === 'object' && !Array.isArray(rawDates)) {
-        const allArrays = Object.values(rawDates).filter(arr => Array.isArray(arr));
+        const allArrays = Object.values(rawDates).filter(Array.isArray);
         if (allArrays.length) {
           intersects = allArrays.reduce((acc, arr) =>
             acc.filter(d => arr.includes(d)),
@@ -46,41 +40,35 @@ export default function Voting() {
           );
         }
       } else if (Array.isArray(rawDates)) {
-        // legacy fallback
         intersects = rawDates.slice();
       }
       setCommonDates(intersects);
 
-      // 3. update context for theme & venue (leave eventOptions.dates alone)
+      // update context
       setEventOptions({ theme, venue, dates: eventOptions.dates });
 
-      // 4. load or initialize this user's votes & rankings
+      // load or init votes
       const userVotes = event.votes?.[userID] || {};
       const newRank = {};
       const newVotesMap = {};
-
       const categories = { theme, venue, dates: intersects };
+
       for (const cat of ['theme','venue','dates']) {
         const opts = categories[cat];
         if (userVotes[cat]) {
-          // merge saved order + any brand-new options
           const prevOrder = Object.entries(userVotes[cat])
             .sort((a,b) => b[1] - a[1])
             .map(([opt]) => opt);
           const merged = Array.from(new Set([...prevOrder, ...opts]));
           newRank[cat] = merged;
-
-          // rebuild scores
           const scores = {};
           merged.forEach((o,i) => scores[o] = merged.length - i);
           newVotesMap[cat] = scores;
         } else {
-          // first-time default: use opts order
           newRank[cat] = opts.slice();
           const scores = {};
           opts.forEach((o,i) => scores[o] = opts.length - i);
           newVotesMap[cat] = scores;
-          // save them immediately
           await saveRankingVoteToFirestore(eventID, userID, cat, scores);
         }
       }
@@ -96,16 +84,16 @@ export default function Voting() {
 
   const handleDragEnd = async (result) => {
     if (!result.destination) return;
-    const cat   = result.source.droppableId;
-    const list  = Array.from(rankings[cat]);
-    const [m]   = list.splice(result.source.index, 1);
+    const cat  = result.source.droppableId;
+    const list = Array.from(rankings[cat]);
+    const [m]  = list.splice(result.source.index, 1);
     list.splice(result.destination.index, 0, m);
 
     const scores = {};
     list.forEach((opt,i) => scores[opt] = list.length - i);
 
     setRankings(r => ({ ...r, [cat]: list }));
-    setVotes     (v => ({ ...v, [cat]: scores }));
+    setVotes(v => ({ ...v, [cat]: scores }));
     await saveRankingVoteToFirestore(eventID, userID, cat, scores);
   };
 
@@ -125,7 +113,9 @@ export default function Voting() {
         <Link to="/venue" className="btn back-btn rounded-circle shadow-sm back-icon">
           <i className="bi bi-arrow-left-short" />
         </Link>
-        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Voting</h1>
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">
+          Voting
+        </h1>
       </div>
 
       <div className='instructions'>
@@ -135,32 +125,31 @@ export default function Voting() {
       <DragDropContext onDragEnd={handleDragEnd}>
         {['theme','venue','dates'].map(cat => (
           <div key={cat} className="category-section">
-            <h3>{cat[0].toUpperCase()+cat.slice(1)}</h3>
+            <h3 className="category-title">
+              {cat[0].toUpperCase() + cat.slice(1)}
+            </h3>
             <Droppable droppableId={cat}>
-              {provided => (
+              {(provided) => (
                 <div
                   className="options-list"
                   {...provided.droppableProps}
                   ref={provided.innerRef}
                 >
-                  {(cat==='dates' ? commonDates : eventOptions[cat]).map((opt, idx) => {
-                    const id = typeof opt==='string' ? opt : JSON.stringify(opt);
-                    return (
-                      <Draggable key={id} draggableId={id} index={idx}>
-                        {inner => (
-                          <div
-                            className="option-item"
-                            ref={inner.innerRef}
-                            {...inner.draggableProps}
-                            {...inner.dragHandleProps}
-                          >
-                            <span className="option-rank">{idx+1}.</span>
-                            <span className="option-text">{opt}</span>
-                          </div>
-                        )}
-                      </Draggable>
-                    );
-                  })}
+                  {rankings[cat].map((opt, idx) => (
+                    <Draggable key={opt} draggableId={opt} index={idx}>
+                      {(draggableProvided) => (
+                        <div
+                          className="option-item"
+                          ref={draggableProvided.innerRef}
+                          {...draggableProvided.draggableProps}
+                          {...draggableProvided.dragHandleProps}
+                        >
+                          <span className="option-rank">{idx+1}.</span>
+                          <span className="option-text">{opt}</span>
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
                   {provided.placeholder}
                 </div>
               )}

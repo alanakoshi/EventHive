@@ -10,26 +10,23 @@
 
 /* Options List */
 .options-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 300px;
-    overflow-y: auto; /* scrolls internally if needed */
-    padding: 5px;
+  min-height: 100px;
+  padding: 8px;
+  background: #fafafa;
+  border: 1px dashed #ccc;
+  border-radius: 4px;
   }
 
 /* Individual Option Item */
 .option-item {
-    width: 100%;
-    max-width: 100%; /* prevents dragging out of bounds visually */
-    padding: 8px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 10px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
 /* Highlight the first option in each final‐ranking list */

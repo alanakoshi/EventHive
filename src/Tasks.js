@@ -16,6 +16,7 @@ function Tasks() {
   const [tasks, setTasks] = useState({});
   const [userNames, setUserNames] = useState({});
   const [isHost, setIsHost] = useState(false);
+  const [hostID, setHostID] = useState(null);
   const eventID = localStorage.getItem('eventID');
   const currentUser = auth.currentUser;
   const currentUserEmail = currentUser?.email || '';
@@ -23,108 +24,91 @@ function Tasks() {
   const currentUserName = currentUser?.displayName || currentUserEmail;
 
   useEffect(() => {
+    let interval;
     const loadData = async () => {
-      if (!eventID || !currentUserEmail || !currentUserID) return;
-
+      if (!eventID) return;
       const event = await fetchEventByID(eventID);
-      const loadedTasks = event?.tasks || [];
+      if (!event) return;
+      const { tasks: loadedTasks = [], hostID: fetchedHostID, cohosts: eventCohosts = [] } = event;
+      setHostID(fetchedHostID);
+      setIsHost(fetchedHostID === currentUserID);
+
+      // Group tasks by cohostName (key)
       const grouped = {};
-      loadedTasks.forEach(task => {
-        const ownerKey = task.cohostName === 'HOST' ? event?.hostID : task.cohostName;
-        if (!grouped[ownerKey]) grouped[ownerKey] = [];
-        grouped[ownerKey].push(task);
+      loadedTasks.forEach(t => {
+        const key = t.cohostName;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push({ text: t.text, completed: t.completed });
       });
-      if (grouped['HOST'] && event?.hostID) {
-        grouped[event.hostID] = [...(grouped[event.hostID] || []), ...grouped['HOST']];
-        delete grouped['HOST'];
-      }
       setTasks(grouped);
 
-      const hostID = event?.hostID;
-      if (hostID === currentUserID) {
-        setIsHost(true);
-      }
-
-      const hostName = hostID ? await fetchUserNameByUID(hostID) : 'Host';
-      const emailsFromCohosts = event?.cohosts?.map(c => c.email) || [];
-      const namesFromCohosts = event?.cohosts?.reduce((acc, cur) => {
-        acc[cur.email] = cur.name;
-        return acc;
-      }, {}) || {};
-
-      const allEmails = [...new Set([...emailsFromCohosts, currentUserEmail])];
+      // Map each key to a display name
       const nameMap = {};
-
-      for (const email of allEmails) {
-        const fetchedName = await fetchUserNameByEmail(email);
-        nameMap[email] = fetchedName || namesFromCohosts[email] || email;
-      }
-
-      if (hostID) {
-        nameMap[hostID] = hostName;
-      }
-
-      nameMap[currentUserEmail] = currentUserName;
+      Object.keys(grouped).forEach(key => {
+        if (key === currentUserEmail) {
+          nameMap[key] = currentUserName;
+        } else {
+          const co = eventCohosts.find(c => c.email === key);
+          nameMap[key] = co ? co.name : key;
+        }
+      });
       setUserNames(nameMap);
     };
 
     loadData();
-    const interval = setInterval(loadData, 1000);
+    interval = setInterval(loadData, 1000);
     return () => clearInterval(interval);
-  }, [cohosts]);
+  }, [cohosts, eventID, currentUserEmail, currentUserID, currentUserName]);
 
-  const persistTasksToFirestore = async (newTasks) => {
-    const allTasks = [];
-    for (const owner in newTasks) {
-      newTasks[owner].forEach(task =>
-        allTasks.push({ ...task, cohostName: owner })
-      );
-    }
-    await updateEventInFirestore(eventID, { tasks: allTasks });
+  // Owners list: host first (by email), then others
+  const owners = Object.keys(userNames).sort((a, b) => {
+    if (a === currentUserEmail) return -1;
+    if (b === currentUserEmail) return 1;
+    return 0;
+  });
+
+  const persistTasks = async (newTasks) => {
+    const all = [];
+    Object.entries(newTasks).forEach(([key, arr]) => {
+      arr.forEach(t => all.push({ ...t, cohostName: key }));
+    });
+    await updateEventInFirestore(eventID, { tasks: all });
   };
 
-  const handleAddTask = async (owner, text) => {
-    if (!isHost) return;
-    const name = userNames[owner] || owner;
-    if (!text.trim()) return;
-
-    const newTask = { text, completed: false };
-    const updated = {
-      ...tasks,
-      [owner]: [...(tasks[owner] || []), newTask],
-    };
+  const handleAddTask = async (ownerKey, text) => {
+    if (!isHost || !text.trim()) return;
+    const updated = { ...tasks };
+    updated[ownerKey] = [...(updated[ownerKey] || []), { text, completed: false }];
     setTasks(updated);
-    await persistTasksToFirestore(updated);
+    await persistTasks(updated);
   };
 
-  const handleDeleteTask = async (name, index) => {
+  const handleDeleteTask = async (ownerKey, idx) => {
     if (!isHost) return;
-    const updated = tasks[name].filter((_, i) => i !== index);
-    const newState = { ...tasks, [name]: updated };
-    setTasks(newState);
-    await persistTasksToFirestore(newState);
+    const updated = { ...tasks };
+    updated[ownerKey] = updated[ownerKey].filter((_, i) => i !== idx);
+    setTasks(updated);
+    await persistTasks(updated);
   };
 
-  const handleToggleComplete = async (name, index) => {
-    const updated = tasks[name].map((task, i) =>
-      i === index ? { ...task, completed: !task.completed } : task
+  const handleToggleComplete = async (ownerKey, idx) => {
+    const updated = { ...tasks };
+    updated[ownerKey] = updated[ownerKey].map((t, i) =>
+      i === idx ? { ...t, completed: !t.completed } : t
     );
-    const newState = { ...tasks, [name]: updated };
-    setTasks(newState);
-    await persistTasksToFirestore(newState);
+    setTasks(updated);
+    await persistTasks(updated);
   };
 
-  const handleEditTask = async (name, index, newText) => {
-    if (!isHost) return;
-    const updated = tasks[name].map((task, i) =>
-      i === index ? { ...task, text: newText } : task
+  const handleEditTask = async (ownerKey, idx, newText) => {
+    if (!isHost || !newText.trim()) return;
+    const updated = { ...tasks };
+    updated[ownerKey] = updated[ownerKey].map((t, i) =>
+      i === idx ? { ...t, text: newText } : t
     );
-    const newState = { ...tasks, [name]: updated };
-    setTasks(newState);
-    await persistTasksToFirestore(newState);
+    setTasks(updated);
+    await persistTasks(updated);
   };
-
-  const allTaskOwners = Object.keys(tasks);
 
   return (
     <div className="container">
@@ -142,54 +126,38 @@ function Tasks() {
         <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Tasks</h1>
       </div>
 
-      <div className='instructions'>
-        Hosts assign tasks. Click the box when you complete one.
-      </div>
+      <div className="instructions">Hosts assign tasks. Click when complete.</div>
 
-      {allTaskOwners.map((owner, idx) => {
-        const name = userNames[owner] || owner;
-        return (
-          <div key={idx} className="category-section bordered-block">
-            <h3>{name}'s Tasks</h3>
-            {isHost && <TaskInput onAdd={(task) => handleAddTask(owner, task)} />}
-            <ul className="task-list">
-              {(tasks[owner] || []).map((task, i) => (
-                <li key={i} className={`task-item ${task.completed ? 'completed' : ''}`}>
-                  <div className="task-content">
-                    <input
-                      type="checkbox"
-                      checked={task.completed}
-                      onChange={() => handleToggleComplete(owner, i)}
-                    />
-                    {isHost ? (
-                      <EditableTask
-                        text={task.text}
-                        onSave={(newText) => handleEditTask(owner, i, newText)}
-                      />
-                    ) : (
-                      <span>{task.text}</span>
-                    )}
-                  </div>
-                  {isHost && (
-                    <button
-                      onClick={() => handleDeleteTask(owner, i)}
-                      className="remove-button"
-                      style={{ marginLeft: 'auto' }}
-                    >
-                      ✕
-                    </button>
+      {owners.map((key, idx) => (
+        <div key={idx} className="category-section bordered-block">
+          <h3>{userNames[key]}'s Tasks</h3>
+          {isHost && <TaskInput onAdd={(t) => handleAddTask(key, t)} />}
+          <ul className="task-list">
+            {(tasks[key] || []).map((task, i) => (
+              <li key={i} className={`task-item ${task.completed ? 'completed' : ''}`}>
+                <div className="task-content">
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={() => handleToggleComplete(key, i)}
+                  />
+                  {isHost ? (
+                    <EditableTask text={task.text} onSave={(nt) => handleEditTask(key, i, nt)} />
+                  ) : (
+                    <span className="non-editable">{task.text}</span>
                   )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        );
-      })}
+                </div>
+                {isHost && (
+                  <button onClick={() => handleDeleteTask(key, i)} className="remove-button">✕</button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
 
       <div className="next-button-row">
-        <Link to="/complete" className="next-button">
-          Next
-        </Link>
+        <Link to="/complete" className="next-button">Next</Link>
       </div>
     </div>
   );
@@ -198,9 +166,9 @@ function Tasks() {
 function TaskInput({ onAdd }) {
   const [taskText, setTaskText] = useState('');
   const tryAdd = () => {
-    const trimmed = taskText.trim();
-    if (trimmed !== '') {
-      onAdd(trimmed);
+    const t = taskText.trim();
+    if (t) {
+      onAdd(t);
       setTaskText('');
     }
   };
@@ -208,42 +176,35 @@ function TaskInput({ onAdd }) {
     <input
       type="text"
       placeholder="Delegate a task"
+      className="event-input"
       value={taskText}
       onChange={(e) => setTaskText(e.target.value)}
       onKeyDown={(e) => e.key === 'Enter' && tryAdd()}
       onBlur={tryAdd}
-      className="event-input"
     />
   );
 }
 
 function EditableTask({ text, onSave }) {
-  const [isEditing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [tempText, setTempText] = useState(text);
-
-  useEffect(() => {
-    setTempText(text);
-  }, [text]);
-
-  const commitEdit = () => {
-    const trimmed = tempText.trim();
+  useEffect(() => setTempText(text), [text]);
+  const commit = () => {
+    const t = tempText.trim();
     setTimeout(() => {
-      if (trimmed !== '') {
-        onSave(trimmed);
-      } else {
-        setTempText(text);
-      }
+      if (t) onSave(t);
+      else setTempText(text);
       setEditing(false);
     }, 0);
   };
-
-  return isEditing ? (
+  return editing ? (
     <input
       type="text"
+      className="event-input"
       value={tempText}
       onChange={(e) => setTempText(e.target.value)}
-      onBlur={commitEdit}
-      onKeyDown={(e) => e.key === 'Enter' && commitEdit()}
+      onBlur={commit}
+      onKeyDown={(e) => e.key === 'Enter' && commit()}
       autoFocus
     />
   ) : (

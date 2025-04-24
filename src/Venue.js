@@ -6,12 +6,20 @@ import './Venue.css';
 import './App.css';
 import { updateEventInFirestore, fetchEventByID } from './firebaseHelpers';
 
+const VENUE_CATEGORIES = ['Restaurants','Parks','Bars'];
+const VENUE_SUGGESTIONS = {
+  Restaurants: ['Roaring Fork','Uchiko Austin','Perry’s Steakhouse'],
+  Parks:        ['Zilker Park','Barton Springs','McKinney Falls'],
+  Bars:         ['The Roosevelt Room','The Driskill Bar','Garage']
+};
+
 function Venue() {
   const [venueName, setVenueName] = useState('');
   const { eventOptions, setEventOptions } = useContext(EventContext);
   const [showWarning, setShowWarning] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingValue, setEditingValue] = useState('');
+  const [activeCategory, setActiveCategory] = useState(VENUE_CATEGORIES[0]);
   const inputRef = useRef(null);
   const editRef = useRef(null);
 
@@ -40,14 +48,18 @@ function Venue() {
   const handleInputChange = (e) => setVenueName(e.target.value);
   const handleEditChange = (e) => setEditingValue(e.target.value);
 
-  const tryAddVenue = () => {
-    const trimmed = venueName.trim();
-    if (trimmed === '') return;
-    const updatedVenues = [...(eventOptions.venue || []), trimmed];
-    setEventOptions((prev) => ({ ...prev, venue: updatedVenues }));
-    setVenueName('');
+  const persist = updated => {
     const eventID = localStorage.getItem('eventID');
-    updateEventInFirestore(eventID, { venue: updatedVenues });
+    updateEventInFirestore(eventID, { venue: updated });
+  };
+
+  const tryAddVenue = (text = venueName) => {
+    const trimmed = text.trim();
+    if (!trimmed) return;
+    const updated = [...(eventOptions.venue||[]), trimmed];
+    setEventOptions(prev => ({ ...prev, venue: updated }));
+    setVenueName('');
+    persist(updated);
   };
 
   const trySaveEdit = () => {
@@ -145,6 +157,33 @@ function Venue() {
             )}
           </div>
         ))}
+      </div>
+
+              {/* Suggestions Section */}
+      <div className="suggestions">
+        <h3>Suggestions</h3>
+        <div className="suggestion-tabs">
+          {VENUE_CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              className={cat===activeCategory ? 'active' : ''}
+              onClick={()=>setActiveCategory(cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <div className="suggestion-list">
+          {VENUE_SUGGESTIONS[activeCategory].map(name => (
+            <button
+              key={name}
+              className="suggestion-item"
+              onClick={()=>tryAddVenue(name)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
       </div>
 
       {showWarning && <div className="alert-popup">Please enter a venue before continuing.</div>}

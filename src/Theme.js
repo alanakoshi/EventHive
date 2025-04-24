@@ -5,12 +5,20 @@ import './Theme.css';
 import './App.css';
 import { updateEventInFirestore, fetchEventByID } from './firebaseHelpers';
 
+const THEME_CATEGORIES = ['Kawaii','Disney','Disco'];
+const THEME_SUGGESTIONS = {
+  Kawaii: ['Cinnamoroll','Smiski','Pom Pom Purin'],
+  Disney: ['Mickey','Frozen','Moana'],
+  Disco:  ['Studio 54','Mirror Ball','70s Funk']
+};
+
 function Theme() {
   const [themeName, setThemeName] = useState("");
   const { eventOptions, setEventOptions } = useContext(EventContext);
   const [showWarning, setShowWarning] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [editingValue, setEditingValue] = useState("");
+  const [activeCategory, setActiveCategory] = useState(THEME_CATEGORIES[0]);
   const inputRef = useRef(null);
   const editRef = useRef(null);
 
@@ -47,13 +55,14 @@ function Theme() {
   const handleInputChange = (e) => setThemeName(e.target.value);
   const handleEditChange = (e) => setEditingValue(e.target.value);
 
-  const tryAddTheme = () => {
-    const trimmed = themeName.trim();
+  const tryAddTheme = (value) => {
+    const toAdd = typeof value === 'string' ? value : themeName;
+    const trimmed = toAdd.trim();
     if (trimmed === "") return;
+  
     const updatedThemes = [...(eventOptions.theme || []), trimmed];
-    setEventOptions((prev) => ({ ...prev, theme: updatedThemes }));
+    setEventOptions(prev => ({ ...prev, theme: updatedThemes }));
     setThemeName("");
-
     const eventID = localStorage.getItem("eventID");
     updateEventInFirestore(eventID, { theme: updatedThemes });
     localStorage.setItem("theme", JSON.stringify(updatedThemes));
@@ -154,6 +163,33 @@ function Theme() {
             )}
           </div>
         ))}
+      </div>
+
+         {/* Suggestions Section */}
+      <div className="suggestions">
+        <h3>Suggestions</h3>
+        <div className="suggestion-tabs">
+          {THEME_CATEGORIES.map(cat => (
+            <button
+              key={cat}
+              className={cat===activeCategory ? 'active' : ''}
+              onClick={()=>setActiveCategory(cat)}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+        <div className="suggestion-list">
+          {THEME_SUGGESTIONS[activeCategory].map(s => (
+            <button
+              key={s}
+              className="suggestion-item"
+              onClick={()=>tryAddTheme(s)}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
 
       {showWarning && <div className="alert-popup">Please enter a theme before continuing.</div>}

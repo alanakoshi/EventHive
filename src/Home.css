@@ -276,3 +276,62 @@ h1 {
   border-radius: 15px;
   padding: 0rem 0.5rem;
 }
+
+/* Suggestions container */
+.suggestions {
+  margin-top: 24px;
+}
+
+/* Suggestions header */
+.suggestions h3 {
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+
+/* Tab row */
+.suggestion-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* Individual tab buttons */
+.suggestion-tabs button {
+  flex: none;
+  padding: 8px 16px;
+  border: 1px solid #000;
+  border-radius: 9999px;
+  background-color: #fff;
+  color: #000;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.suggestion-tabs button.active {
+  background-color: #000;
+  color: #fff;
+}
+
+/* Suggestions list */
+.suggestion-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Individual suggestion items */
+.suggestion-item {
+  padding: 12px 16px;
+  border: 1px solid #000;
+  border-radius: 8px;
+  background-color: #fff;
+  text-align: left;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.suggestion-item:hover {
+  background-color: #f0f0f0;
+}

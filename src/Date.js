@@ -106,9 +106,9 @@ function SelectDate() {
       {/* Progress Bar */}
       <div className="progress-wrapper">
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: '30%' }} />
+          <div className="progress-bar" style={{ width: '33%' }} />
         </div>
-        <div className="progress-percentage">30%</div>
+        <div className="progress-percentage">33%</div>
       </div>
 
       {/* Header */}

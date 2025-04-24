@@ -101,9 +101,9 @@ function Theme() {
     <div className="container">
       <div className="progress-wrapper">
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: '40%' }} />
+          <div className="progress-bar" style={{ width: '44%' }} />
         </div>
-        <div className="progress-percentage">40%</div>
+        <div className="progress-percentage">44%</div>
       </div>
 
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">

@@ -114,9 +114,9 @@ function Tasks() {
     <div className="container">
       <div className="progress-wrapper">
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: '90%' }} />
+          <div className="progress-bar" style={{ width: '88%' }} />
         </div>
-        <div className="progress-percentage">90%</div>
+        <div className="progress-percentage">88%</div>
       </div>
 
       {/* Header + Back Button */}

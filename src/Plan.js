@@ -99,9 +99,9 @@ function Plan() {
       {/* Progress Bar */}
       <div className="progress-wrapper">
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: '10%' }} />
+          <div className="progress-bar" style={{ width: '11%' }} />
         </div>
-        <div className="progress-percentage">10%</div>
+        <div className="progress-percentage">11%</div>
       </div>
 
       {/* Header + Back */}

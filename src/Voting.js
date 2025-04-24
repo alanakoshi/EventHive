@@ -104,9 +104,9 @@ export default function Voting() {
     <div className="container">
       <div className="progress-wrapper">
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: '60%' }} />
+          <div className="progress-bar" style={{ width: '66%' }} />
         </div>
-        <div className="progress-percentage">60%</div>
+        <div className="progress-percentage">66%</div>
       </div>
 
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">

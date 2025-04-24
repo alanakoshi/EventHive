@@ -88,9 +88,9 @@ function Venue() {
     <div className="container">
       <div className="progress-wrapper">
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: '50%' }} />
+          <div className="progress-bar" style={{ width: '55%' }} />
         </div>
-        <div className="progress-percentage">50%</div>
+        <div className="progress-percentage">55%</div>
       </div>
 
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">

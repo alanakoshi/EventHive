@@ -246,3 +246,9 @@ export const deleteCohostFromFirestore = async (eventID, email) => {
     console.error('Error removing cohost:', error);
   }
 };
+
+export async function deleteEventFromFirestore(eventID) {
+  if (!eventID) throw new Error("deleteEventFromFirestore: missing eventID");
+  const eventRef = doc(db, "events", eventID);
+  await deleteDoc(eventRef);
+}

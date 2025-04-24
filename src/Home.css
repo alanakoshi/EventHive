@@ -238,10 +238,17 @@ h1 {
 /* sort‑by row */
 .sort-by-row {
   display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
   margin-top: 6px;
+}
+/* Hide thin scrollbar in WebKit */
+.sort-by-row::-webkit-scrollbar {
+  height: 6px;
 }
 .sort-label {
   font-weight: 500;
@@ -256,6 +263,7 @@ h1 {
   background: transparent;
   font-size: 14px;
   cursor: pointer;
+  white-space: nowrap;
   transition: background 0.2s, border-color 0.2s;
 }
 .sort-btn.active {
@@ -334,4 +342,26 @@ h1 {
 
 .suggestion-item:hover {
   background-color: #f0f0f0;
+}
+
+Event card menu
+.event-card-home {
+  position: relative;
+  overflow: visible;
+}
+.event-menu-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 4px;
+  cursor: pointer;
+  color: black;
+}
+.event-menu-btn:hover {
+  color: #000;
 }

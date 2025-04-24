@@ -21,12 +21,14 @@
   
   /* Each cohost item box */
   .cohost-name-box {
+    display: flex;
     position: relative;      /* Position relative for absolute positioning of the button */
     background-color: #f7f4db; /* Optional background color */
     border-radius: 8px;
     padding: 8px 40px 8px 12px; /* Padding: extra space on right for remove button */
     margin: 0 auto 8px auto;
     text-align: left;
+    gap: 0.5rem;
   }
   
   /* Center the cohost name text */

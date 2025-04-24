@@ -1,9 +1,9 @@
+// Tasks.js
 import { useState, useContext, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CohostContext } from './CohostContext';
 import { auth } from './firebase';
 import {
-  fetchUserNameByEmail,
   fetchUserNameByUID,
   fetchEventByID,
   updateEventInFirestore,
@@ -14,141 +14,169 @@ import './Voting.css';
 function Tasks() {
   const { cohosts } = useContext(CohostContext);
   const [tasks, setTasks] = useState({});
-  const [userNames, setUserNames] = useState({});
+  const [hostName, setHostName] = useState('');
+  const [owners, setOwners] = useState([]);
   const [isHost, setIsHost] = useState(false);
-  const [hostID, setHostID] = useState(null);
-  const eventID = localStorage.getItem('eventID');
-  const currentUser = auth.currentUser;
-  const currentUserEmail = currentUser?.email || '';
-  const currentUserID = currentUser?.uid || '';
-  const currentUserName = currentUser?.displayName || currentUserEmail;
 
+  const eventID = localStorage.getItem('eventID');
+  const currentUserID = auth.currentUser?.uid;
+
+  // Load event, host, cohosts, and tasks
   useEffect(() => {
-    let interval;
+    if (!eventID) return;
+
     const loadData = async () => {
-      if (!eventID) return;
       const event = await fetchEventByID(eventID);
       if (!event) return;
-      const { tasks: loadedTasks = [], hostID: fetchedHostID, cohosts: eventCohosts = [] } = event;
-      setHostID(fetchedHostID);
-      setIsHost(fetchedHostID === currentUserID);
 
-      // Group tasks by cohostName (key)
+      // 1) Host info
+      const hostID = event.hostID;
+      const fetchedHostName = hostID
+        ? await fetchUserNameByUID(hostID)
+        : 'Host';
+      setHostName(fetchedHostName);
+      setIsHost(hostID === currentUserID);
+
+      // 2) Cohost names (from event doc)
+      const cohostNames = (event.cohosts || []).map(c => c.name);
+
+      // 3) Build a unique owners list: host first, then cohosts (no dupes)
+      const ownersList = [
+        fetchedHostName,
+        ...cohostNames.filter(n => n !== fetchedHostName),
+      ];
+      setOwners(ownersList);
+
+      // 4) Group tasks by the display name stored in each task.cohostName
+      const loadedTasks = event.tasks || [];
       const grouped = {};
-      loadedTasks.forEach(t => {
-        const key = t.cohostName;
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push({ text: t.text, completed: t.completed });
+      loadedTasks.forEach(task => {
+        if (!grouped[task.cohostName]) grouped[task.cohostName] = [];
+        grouped[task.cohostName].push(task);
       });
       setTasks(grouped);
-
-      // Map each key to a display name
-      const nameMap = {};
-      Object.keys(grouped).forEach(key => {
-        if (key === currentUserEmail) {
-          nameMap[key] = currentUserName;
-        } else {
-          const co = eventCohosts.find(c => c.email === key);
-          nameMap[key] = co ? co.name : key;
-        }
-      });
-      setUserNames(nameMap);
     };
 
     loadData();
-    interval = setInterval(loadData, 1000);
-    return () => clearInterval(interval);
-  }, [cohosts, eventID, currentUserEmail, currentUserID, currentUserName]);
+  }, [cohosts, eventID, currentUserID]);
 
-  // Owners list: host first (by email), then others
-  const owners = Object.keys(userNames).sort((a, b) => {
-    if (a === currentUserEmail) return -1;
-    if (b === currentUserEmail) return 1;
-    return 0;
-  });
-
-  const persistTasks = async (newTasks) => {
-    const all = [];
-    Object.entries(newTasks).forEach(([key, arr]) => {
-      arr.forEach(t => all.push({ ...t, cohostName: key }));
+  // Helper to push the in-memory tasks state back to Firestore
+  const persistTasks = async newTasks => {
+    const flat = [];
+    Object.entries(newTasks).forEach(([owner, list]) => {
+      list.forEach(task => flat.push({ ...task, cohostName: owner }));
     });
-    await updateEventInFirestore(eventID, { tasks: all });
+    await updateEventInFirestore(eventID, { tasks: flat });
   };
 
-  const handleAddTask = async (ownerKey, text) => {
+  // CRUD handlers (add/edit/delete toggles persist immediately)
+  const handleAdd = async (owner, text) => {
     if (!isHost || !text.trim()) return;
-    const updated = { ...tasks };
-    updated[ownerKey] = [...(updated[ownerKey] || []), { text, completed: false }];
-    setTasks(updated);
-    await persistTasks(updated);
+    const newState = {
+      ...tasks,
+      [owner]: [...(tasks[owner] || []), { text, completed: false }],
+    };
+    setTasks(newState);
+    await persistTasks(newState);
   };
-
-  const handleDeleteTask = async (ownerKey, idx) => {
+  const handleDelete = async (owner, i) => {
     if (!isHost) return;
-    const updated = { ...tasks };
-    updated[ownerKey] = updated[ownerKey].filter((_, i) => i !== idx);
-    setTasks(updated);
-    await persistTasks(updated);
+    const newState = {
+      ...tasks,
+      [owner]: tasks[owner].filter((_, idx) => idx !== i),
+    };
+    setTasks(newState);
+    await persistTasks(newState);
   };
-
-  const handleToggleComplete = async (ownerKey, idx) => {
-    const updated = { ...tasks };
-    updated[ownerKey] = updated[ownerKey].map((t, i) =>
-      i === idx ? { ...t, completed: !t.completed } : t
-    );
-    setTasks(updated);
-    await persistTasks(updated);
+  const handleToggle = async (owner, i) => {
+    const newState = {
+      ...tasks,
+      [owner]: tasks[owner].map((t, idx) =>
+        idx === i ? { ...t, completed: !t.completed } : t
+      ),
+    };
+    setTasks(newState);
+    await persistTasks(newState);
   };
-
-  const handleEditTask = async (ownerKey, idx, newText) => {
+  const handleEdit = async (owner, i, newText) => {
     if (!isHost || !newText.trim()) return;
-    const updated = { ...tasks };
-    updated[ownerKey] = updated[ownerKey].map((t, i) =>
-      i === idx ? { ...t, text: newText } : t
-    );
-    setTasks(updated);
-    await persistTasks(updated);
+    const newState = {
+      ...tasks,
+      [owner]: tasks[owner].map((t, idx) =>
+        idx === i ? { ...t, text: newText } : t
+      ),
+    };
+    setTasks(newState);
+    await persistTasks(newState);
   };
 
   return (
     <div className="container">
       <div className="progress-wrapper">
         <div className="progress-container">
-          <div className="progress-bar" style={{ width: '80%' }} />
+          <div className="progress-bar" style={{ width: '90%' }} />
         </div>
-        <div className="progress-percentage">80%</div>
+        <div className="progress-percentage">90%</div>
       </div>
 
+      {/* Header + Back Button */}
       <div className="d-flex align-items-center justify-content-between mb-4 position-relative">
-        <Link to="/final-result" className="btn back-btn rounded-circle shadow-sm back-icon">
+        <Link
+          to="/final-result"
+          className="btn back-btn rounded-circle shadow-sm back-icon"
+        >
           <i className="bi bi-arrow-left-short"></i>
         </Link>
-        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Tasks</h1>
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">
+          Tasks
+        </h1>
       </div>
 
-      <div className="instructions">Hosts assign tasks. Click when complete.</div>
+      {/* Instructions */}
+      <div className="instructions">
+        {isHost
+          ? 'As host, you can assign, edit or delete tasks. Cohosts may only check off completed items.'
+          : 'Mark your tasks complete by clicking the checkbox.'}
+      </div>
 
-      {owners.map((key, idx) => (
+      {/* Task Sections, one per owner */}
+      {owners.map((owner, idx) => (
         <div key={idx} className="category-section bordered-block">
-          <h3>{userNames[key]}'s Tasks</h3>
-          {isHost && <TaskInput onAdd={(t) => handleAddTask(key, t)} />}
+          <h3>{owner}&apos;s Tasks</h3>
+
+          {/* Only hosts see the “Delegate a task” input */}
+          {isHost && <TaskInput onAdd={text => handleAdd(owner, text)} />}
+
           <ul className="task-list">
-            {(tasks[key] || []).map((task, i) => (
-              <li key={i} className={`task-item ${task.completed ? 'completed' : ''}`}>
+            {(tasks[owner] || []).map((task, i) => (
+              <li
+                key={i}
+                className={`task-item ${task.completed ? 'completed' : ''}`}
+              >
                 <div className="task-content">
                   <input
                     type="checkbox"
                     checked={task.completed}
-                    onChange={() => handleToggleComplete(key, i)}
+                    onChange={() => handleToggle(owner, i)}
                   />
                   {isHost ? (
-                    <EditableTask text={task.text} onSave={(nt) => handleEditTask(key, i, nt)} />
+                    <EditableTask
+                      text={task.text}
+                      onSave={newText => handleEdit(owner, i, newText)}
+                    />
                   ) : (
-                    <span className="non-editable">{task.text}</span>
+                    <span>{task.text}</span>
                   )}
                 </div>
+
+                {/* Only hosts get the delete button */}
                 {isHost && (
-                  <button onClick={() => handleDeleteTask(key, i)} className="remove-button">✕</button>
+                  <button
+                    onClick={() => handleDelete(owner, i)}
+                    className="remove-button"
+                  >
+                    ✕
+                  </button>
                 )}
               </li>
             ))}
@@ -156,30 +184,32 @@ function Tasks() {
         </div>
       ))}
 
+      {/* Next Button */}
       <div className="next-button-row">
-        <Link to="/complete" className="next-button">Next</Link>
+        <Link to="/complete" className="next-button">
+          Next
+        </Link>
       </div>
     </div>
   );
 }
 
 function TaskInput({ onAdd }) {
-  const [taskText, setTaskText] = useState('');
+  const [input, setInput] = useState('');
   const tryAdd = () => {
-    const t = taskText.trim();
-    if (t) {
-      onAdd(t);
-      setTaskText('');
+    if (input.trim()) {
+      onAdd(input.trim());
+      setInput('');
     }
   };
   return (
     <input
+      className="event-input"
       type="text"
       placeholder="Delegate a task"
-      className="event-input"
-      value={taskText}
-      onChange={(e) => setTaskText(e.target.value)}
-      onKeyDown={(e) => e.key === 'Enter' && tryAdd()}
+      value={input}
+      onChange={e => setInput(e.target.value)}
+      onKeyDown={e => e.key === 'Enter' && tryAdd()}
       onBlur={tryAdd}
     />
   );
@@ -187,28 +217,26 @@ function TaskInput({ onAdd }) {
 
 function EditableTask({ text, onSave }) {
   const [editing, setEditing] = useState(false);
-  const [tempText, setTempText] = useState(text);
-  useEffect(() => setTempText(text), [text]);
+  const [temp, setTemp] = useState(text);
+
+  useEffect(() => setTemp(text), [text]);
   const commit = () => {
-    const t = tempText.trim();
-    setTimeout(() => {
-      if (t) onSave(t);
-      else setTempText(text);
-      setEditing(false);
-    }, 0);
+    if (temp.trim()) onSave(temp.trim());
+    setEditing(false);
   };
+
   return editing ? (
     <input
-      type="text"
       className="event-input"
-      value={tempText}
-      onChange={(e) => setTempText(e.target.value)}
+      type="text"
+      value={temp}
+      onChange={e => setTemp(e.target.value)}
       onBlur={commit}
-      onKeyDown={(e) => e.key === 'Enter' && commit()}
+      onKeyDown={e => e.key === 'Enter' && commit()}
       autoFocus
     />
   ) : (
-    <span onClick={() => setEditing(true)} className="editable-task">
+    <span className="editable-task" onClick={() => setEditing(true)}>
       {text}
     </span>
   );

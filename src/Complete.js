@@ -1,73 +1,138 @@
-import React, { useEffect, useState } from 'react';
+// Complete.js
+import React, { useState, useEffect } from 'react';
 import './Complete.css';
 import { Link } from 'react-router-dom';
 import { fetchEventByID } from './firebaseHelpers';
 
 function Complete() {
-  const [topDate, setTopDate] = useState('N/A');
-  const [topTheme, setTopTheme] = useState('N/A');
-  const [topVenue, setTopVenue] = useState('N/A');
+  const [topDate, setTopDate]       = useState('N/A');
+  const [topTheme, setTopTheme]     = useState('N/A');
+  const [topVenue, setTopVenue]     = useState('N/A');
   const [taskStatus, setTaskStatus] = useState('Loading...');
-  const [previousVotes, setPreviousVotes] = useState(null);
+  const [votesCache, setVotesCache] = useState(null);
+
+  const displayLabel = (opt) => {
+    if (typeof opt === 'string') return opt;
+    if (opt?.name)                return opt.name;
+    if (opt?.email)               return opt.email;
+    return String(opt);
+  };
+
+  // Flatten event[cat] into an array, whether it's an array or object-of-arrays
+  const getEventOrder = (cat, event) => {
+    const raw = event[cat];
+    if (Array.isArray(raw)) {
+      return raw;
+    } else if (raw && typeof raw === 'object') {
+      return Object.values(raw).flat();
+    }
+    return [];
+  };
+
+  // Gather all options and produce a unique list preserving event order first, then vote order
+  const getAllOptionsInCategory = (cat, event) => {
+    const eventOrder = getEventOrder(cat, event);
+    const fromVotes = Object.values(event.votes || {})
+      .flatMap(u => Object.keys(u[cat] || {}))
+      .map(raw => {
+        try { return JSON.parse(raw); }
+        catch { return raw; }
+      });
+
+    const seen = new Set();
+    // eventOrder first
+    eventOrder.forEach(o => {
+      const k = typeof o === 'string' ? o : JSON.stringify(o);
+      seen.add(k);
+    });
+
+    // build combined array
+    const combined = [...eventOrder];
+    fromVotes.forEach(o => {
+      const k = typeof o === 'string' ? o : JSON.stringify(o);
+      if (!seen.has(k)) {
+        seen.add(k);
+        combined.push(o);
+      }
+    });
+
+    return combined;
+  };
+
+  // Rank them: by score desc, then by original event order
+  const getRanked = (cat, event) => {
+    const opts = getAllOptionsInCategory(cat, event);
+    const scores = {};
+
+    Object.values(event.votes || {}).forEach(u => {
+      const ballots = u[cat] || {};
+      opts.forEach(o => {
+        const key = typeof o === 'string' ? o : JSON.stringify(o);
+        scores[key] = (scores[key] || 0) + (ballots[key] || 0);
+      });
+    });
+
+    return opts
+      .map(o => {
+        const key = typeof o === 'string' ? o : JSON.stringify(o);
+        return { option: o, score: scores[key] || 0 };
+      })
+      .sort((a, b) => {
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
+        // tie-breaker: original event order index
+        const idxA = opts.findIndex(x =>
+          (typeof x==='string' ? x : JSON.stringify(x)) ===
+          (typeof a.option==='string' ? a.option : JSON.stringify(a.option))
+        );
+        const idxB = opts.findIndex(x =>
+          (typeof x==='string' ? x : JSON.stringify(x)) ===
+          (typeof b.option==='string' ? b.option : JSON.stringify(b.option))
+        );
+        return idxA - idxB;
+      });
+  };
 
   useEffect(() => {
-    const interval = setInterval(loadFinalData, 1000);
-    return () => clearInterval(interval);
-  }, [previousVotes]);
+    const iv = setInterval(loadFinalData, 1000);
+    return () => clearInterval(iv);
+  }, [votesCache]);
 
-  const loadFinalData = async () => {
+  async function loadFinalData() {
     const eventID = localStorage.getItem('eventID');
+    if (!eventID) return;
     const event = await fetchEventByID(eventID);
     if (!event) return;
 
-    // only recalc when votes change
     const votesString = JSON.stringify(event.votes || {});
-    if (votesString !== JSON.stringify(previousVotes)) {
-      setPreviousVotes(event.votes);
+    if (votesString !== votesCache) {
+      setVotesCache(votesString);
 
-      const getTop = (categoryKey, originalOrder) => {
-        // 1) aggregate scores
-        const scores = {};
-        Object.values(event.votes || {}).forEach(userVote => {
-          const vote = userVote[categoryKey];
-          if (vote) {
-            Object.entries(vote).forEach(([opt, sc]) => {
-              scores[opt] = (scores[opt] || 0) + sc;
-            });
-          }
-        });
+      // Date
+      const rd = getRanked('dates', event);
+      setTopDate(
+        rd.length > 0 ? displayLabel(rd[0].option) : 'N/A'
+      );
 
-        // 2) normalize originalOrder into an array
-        let orderArray;
-        if (Array.isArray(originalOrder)) {
-          orderArray = originalOrder;
-        } else if (originalOrder && typeof originalOrder === 'object') {
-          // union of all subarrays
-          orderArray = Object.values(originalOrder).flat();
-        } else {
-          orderArray = [];
-        }
-        // remove duplicates but keep first appearance
-        const uniqueOrder = [...new Set(orderArray)];
+      // Theme
+      const rt = getRanked('theme', event);
+      setTopTheme(
+        rt.length > 0 ? displayLabel(rt[0].option) : 'N/A'
+      );
 
-        // 3) sort by score desc
-        const sorted = uniqueOrder
-          .map(option => ({ option, score: scores[option] || 0 }))
-          .sort((a, b) => b.score - a.score);
-
-        return sorted.length > 0 ? sorted[0].option : 'N/A';
-      };
-
-      setTopDate(getTop('dates', event.dates));
-      setTopTheme(getTop('theme', event.theme));
-      setTopVenue(getTop('venue', event.venue));
+      // Venue
+      const rv = getRanked('venue', event);
+      setTopVenue(
+        rv.length > 0 ? displayLabel(rv[0].option) : 'N/A'
+      );
     }
 
-    // tasks status
+    // Tasks status
     const tasks = event.tasks || [];
-    const allCompleted = tasks.length === 0 || tasks.every(t => t.completed);
-    setTaskStatus(allCompleted ? 'Finished' : 'In Progress');
-  };
+    const allDone = tasks.length === 0 || tasks.every(t => t.completed);
+    setTaskStatus(allDone ? 'Finished' : 'In Progress');
+  }
 
   return (
     <div className="complete-container">
@@ -82,7 +147,9 @@ function Complete() {
         <Link to="/tasks" className="btn back-btn rounded-circle shadow-sm back-icon">
           <i className="bi bi-arrow-left-short"></i>
         </Link>
-        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">Complete</h1>
+        <h1 className="position-absolute start-50 translate-middle-x m-0 text-nowrap">
+          Complete
+        </h1>
       </div>
 
       <div className="instructions">
@@ -90,7 +157,7 @@ function Complete() {
       </div>
 
       <div className="details">
-        <p><strong>Date:</strong> {topDate}</p>
+        <p><strong>Date:</strong>  {topDate}</p>
         <p><strong>Theme:</strong> {topTheme}</p>
         <p><strong>Venue:</strong> {topVenue}</p>
         <p><strong>Tasks:</strong> {taskStatus}</p>

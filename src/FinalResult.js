@@ -1,7 +1,10 @@
 // FinalResult.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchEventByID, fetchUserNameByUID } from './firebaseHelpers';
+import {
+  fetchEventByID,
+  fetchUserNameByUID
+} from './firebaseHelpers';
 import './Voting.css';
 import './App.css';
 
@@ -11,7 +14,6 @@ function FinalResult() {
   const [missingVoters, setMissingVoters] = useState([]);
   const [loading, setLoading]             = useState(true);
 
-  // Helper to display a label from either a string or object
   const displayLabel = (opt) => {
     if (typeof opt === 'string') return opt;
     if (opt?.name)                return opt.name;
@@ -19,30 +21,23 @@ function FinalResult() {
     return 'Unknown';
   };
 
-  // Collect all unique options from event + votes
   const getAllOptionsInCategory = (cat) => {
     const fromEvent = eventOptions[cat] || [];
     const fromVotes = Object.values(finalVotes)
-      .flatMap(userVote => Object.keys(userVote?.[cat] || {}))
+      .flatMap(v => Object.keys(v?.[cat] || {}))
       .map(raw => {
         try { return JSON.parse(raw); }
         catch { return raw; }
       });
-
-    const all = [...fromEvent, ...fromVotes];
-    const uniq = [];
     const seen = new Set();
-    for (const o of all) {
+    return [...fromEvent, ...fromVotes].filter(o => {
       const key = typeof o === 'string' ? o : JSON.stringify(o);
-      if (!seen.has(key)) {
-        seen.add(key);
-        uniq.push(o);
-      }
-    }
-    return uniq;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   };
 
-  // Sum up scores and sort descending
   const getRanked = (cat) => {
     const opts = getAllOptionsInCategory(cat);
     const scores = {};
@@ -70,11 +65,11 @@ function FinalResult() {
       const ev = await fetchEventByID(eventID);
       if (!ev) return;
 
-      // normalize theme & venue
+      // normalize event arrays
       const theme = Array.isArray(ev.theme) ? ev.theme : [];
       const venue = Array.isArray(ev.venue) ? ev.venue : [];
 
-      // --- intersect everybody's dates ---
+      // intersect dates if object, else use array
       let dates = [];
       const rawDates = ev.dates || {};
       if (typeof rawDates === 'object' && !Array.isArray(rawDates)) {
@@ -91,19 +86,23 @@ function FinalResult() {
       setEventOptions({ theme, venue, dates });
       setFinalVotes(ev.votes || {});
 
-      // build missing voters list
-      const required = [
-        ev.hostID,
-        ...(ev.cohosts || []).map(c => c.userID).filter(Boolean)
-      ];
-      const miss = [];
-      for (const uid of required) {
-        if (!ev.votes?.[uid]) {
-          const name = await fetchUserNameByUID(uid);
-          miss.push(name || 'Unknown');
-        }
-      }
-      setMissingVoters(miss);
+      // build participant names: host + cohost names
+      const participants = [];
+      const hostName = await fetchUserNameByUID(ev.hostID) || 'Host';
+      participants.push(hostName);
+      (ev.cohosts || []).forEach(c => {
+        participants.push(c.name);
+      });
+
+      // who has voted? map vote UIDs to names
+      const voteUIDs = Object.keys(ev.votes || {});
+      const votedNames = await Promise.all(
+        voteUIDs.map(uid => fetchUserNameByUID(uid))
+      );
+
+      // missing = participants minus those in votedNames
+      const missing = participants.filter(p => !votedNames.includes(p));
+      setMissingVoters(missing);
       setLoading(false);
     };
 
@@ -134,34 +133,42 @@ function FinalResult() {
         Here are the final rankings for each category.
       </div>
 
+      {/* Waiting banner */}
+      {!loading && missingVoters.length > 0 && (
+        <div className="alert-popup">
+          Waiting on: {missingVoters.join(', ')} to vote.
+        </div>
+      )}
+
+      {/* Rankings */}
       {['theme','venue','dates'].map(cat => (
         <div key={cat} className="category-section">
           <h3>{cat.charAt(0).toUpperCase() + cat.slice(1)}</h3>
-
           <div className="options-list">
-          {getRanked(cat).map(({ option, score }, i) => {
-            const id = typeof option === 'string' ? option : JSON.stringify(option);
-            return (
-              <div 
-                key={id} 
-                className={`option-item${i === 0 ? ' top-pick' : ''}`}
-              >
-                <span className="option-rank">{i + 1}.</span>
-                <span className="option-text">{displayLabel(option)}</span>
-                <span className="score-tag">({score} pts)</span>
-              </div>
-            );
-          })}
+            {getRanked(cat).map(({ option, score }, i) => {
+              const id = typeof option === 'string' ? option : JSON.stringify(option);
+              return (
+                <div
+                  key={id}
+                  className={`option-item${i === 0 ? ' top-pick' : ''}`}
+                >
+                  <span className="option-rank">{i+1}.</span>{' '}
+                  <span className="option-text">{displayLabel(option)}</span>{' '}
+                  <span className="score-tag">({score} pts)</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
 
       <div className="next-button-row">
         {loading ? (
-          <button className="next-button disabled" disabled>Loading...</button>
+          <button className="next-button disabled" disabled>
+            Loading...
+          </button>
         ) : missingVoters.length === 0 ? (
-          <Link to="/tasks"
-                className="next-button active">
+          <Link to="/tasks" className="next-button active">
             Next
           </Link>
         ) : (
